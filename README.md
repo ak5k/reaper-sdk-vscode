@@ -1,7 +1,7 @@
 # [Visual Studio Code](https://code.visualstudio.com/) + [CMake](https://cmake.org/) based cross-platform template for developing a [REAPER](https://www.reaper.fm/) [Plug-in Extension](https://www.reaper.fm/sdk/plugin/plugin.php)
 An entry level solution for setting up a REAPER Plug-in Extension development and build environment based on Visual Studio Code and CMake. Goal is to setup ReaScript IDE-like working environment for developing a simple scriptlike plugin, with little if any former background on C/C++ or REAPER Plug-in Extension development itself, and begin learning. Layman's documentation is included in the source files. Developed and tested on Windows 10, MacOS High Sierra 10.13.6 and Big Sur 11.1, and Ubuntu 20.04.1. Some familiarity with Visual Studio Code is beneficial. Instructions are based on clean/fresh installation.
 ## Installation guide
-If you're unfamiliar with VSCode, it's recommended to read all steps in advance before beginning installation.
+It's recommended to read all steps in advance before beginning installation.
 ### Windows
 Install [Visual Studio Community with Develop C and C++ applications component](https://visualstudio.microsoft.com/vs/features/cplusplus/). Default installation includes MSVC compiler and CMake. Visual Studio installation can be trimmed down before installation or afterwards by cherry-picking only the necessary components from Visual Studio Installer > Individual Components section.
 #### Minimal Visual Studio installation
