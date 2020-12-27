@@ -1,0 +1,2 @@
+#define ACTION_NAME "${ACTION_NAME}"
+#define COMMAND_NAME "${COMMAND_NAME}"
