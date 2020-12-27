@@ -8,7 +8,7 @@ Install [Visual Studio Community with Develop C and C++ applications component](
 * C++ CMake tools for Windows
 * Windows SDK (e.g. Windows 10 SDK (10.0.19041.0) for Windows 10, version 2004)
 ### MacOS
-Perhaps the easiest way is to install [Homebrew](https://brew.sh/). This will also install Apple XCode Command Line Tools. After Homebrew is installed, install CMake with `brew install cmake`. Git can also be installed from Homebrew with `brew install git`.
+Perhaps the easiest way is to install [Homebrew](https://brew.sh/). This will also install Apple XCode Command Line Tools. After Homebrew is installed, install CMake with `brew install cmake`. Git can also be installed from Homebrew with `brew install git`. Current MacOS versions should include [PHP](https://www.php.net/). If not, initial CMake configuration will try to install PHP from Homebrew.
 ### Linux
 Mainstream Linux distributions usually include compiler and many of other necessary tools. On Ubuntu, command `sudo apt install build-essential cmake gdb git valgrind` installs all necessary tools.
 ### All platforms
