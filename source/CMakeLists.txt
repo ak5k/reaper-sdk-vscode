@@ -3,18 +3,17 @@
 # reaper_plugin is our "main target"
 add_library(
     reaper_plugin SHARED
-    main
+    main.cpp
 )
-
-# add my plugin source
-# to reaper_plugin build
-# see CMakeLists.txt in ./my_plugin/
 
 target_link_libraries(
     reaper_plugin
     reaper_interface
 )
 
+# add my plugin source
+# to reaper_plugin build
+# see CMakeLists.txt in ./my_plugin/
 add_subdirectory(my_plugin)
 
 # set swell for reaper_plugin
@@ -24,9 +23,6 @@ if (NOT MSVC)
     target_compile_definitions(swell PUBLIC SWELL_PROVIDED_BY_APP)
     target_link_libraries(reaper_plugin swell)
     if (APPLE)
-        # find_library(COCOA_LIBRARY Cocoa)
-        # target_link_libraries(reaper_plugin "-framework Cocoa")
-        # target_link_libraries(reaper_plugin find_library(Cocoa))
         find_library(APPKIT_LIB AppKit)
         target_link_libraries(swell ${APPKIT_LIB})
     endif()

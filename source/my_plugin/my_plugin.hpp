@@ -8,7 +8,6 @@
 // # include "../../WDL/swell/resource.rc_mac_menu"
 // #endif
 
-#include <reascript_vararg.hpp>
 
 void RegisterMyPlugin();
 void UnregisterMyPlugin();
