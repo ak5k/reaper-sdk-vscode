@@ -30,17 +30,12 @@ Mainstream Linux distributions usually include compiler and many of other necess
 ## Template files
 ### `CMakeLists.txt`
 * From VSCode workspace Explorer (Ctrl/Cmd + Shift + E) open up `CMakeLists.txt` file.
-* Atomistic configuration for plugin and building/compiling.
-* `PLUGIN_NAME` variable is parsed and configured to header file, to setup Action Name and Command Name in REAPER, and filename for the plugin.
+* Configuration for plugin and building/compiling.
 * By default, CMake builds the plugin into `UserPlugins` directory under REAPER resource path.
-* Name for 'plugin or project' can be set by changing `set(PLUGIN_NAME "ak5k: my plugin")`.
-### `main.cpp`
-* `main.cpp` and header file `main.h` are meant to contain the main code of the plugin.
-* [ReaScript API](https://www.reaper.fm/sdk/reascript/reascripthelp.html) functions available.
-* Function `int main()` is called when plugin Action is ran from REAPER.
-### `plugin.cpp`
-* `plugin.cpp` and header file `plugin.h` contain parts which register code in `main.cpp` as a REAPER Plug-in Extension and a related Action.
-* ReaScript style defer behavior can be enabled by setting `defer=true`.
+### `source/main.cpp`
+* "The" REAPER plugin.
+### `source/my_plugin/*`
+* "The" actual source.
 ## First steps
 * By default, VSCode builds a debug version of the plugin and installs it by keyboard shortcut `F7`.
 * Start REAPER, and new plugin and it's Action ("ak5k: my plugin" by default) should show up in the Actions List.
