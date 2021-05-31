@@ -1,6 +1,8 @@
 [submodule "vendor/WDL"]
 	path = vendor/WDL
 	url = https://github.com/justinfrankel/WDL
+    ignore = all
 [submodule "vendor/reaper-sdk"]
 	path = vendor/reaper-sdk
 	url = https://github.com/justinfrankel/reaper-sdk
+    ignore = all
