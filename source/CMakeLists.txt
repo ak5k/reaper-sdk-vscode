@@ -9,12 +9,13 @@ add_library(
 # add my plugin source
 # to reaper_plugin build
 # see CMakeLists.txt in ./my_plugin/
-add_subdirectory(my_plugin)
 
 target_link_libraries(
     reaper_plugin
     reaper_interface
 )
+
+add_subdirectory(my_plugin)
 
 # set swell for reaper_plugin
 # if not Windows
@@ -27,7 +28,7 @@ if (NOT MSVC)
         # target_link_libraries(reaper_plugin "-framework Cocoa")
         # target_link_libraries(reaper_plugin find_library(Cocoa))
         find_library(APPKIT_LIB AppKit)
-        target_link_libraries(swell PRIVATE ${APPKIT_LIB})
+        target_link_libraries(swell ${APPKIT_LIB})
     endif()
 endif()
 

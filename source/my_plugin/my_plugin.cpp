@@ -1,6 +1,5 @@
 #include "my_plugin.hpp"
 #include <reaper_plugin_functions.h>
-#include <reascript_vararg.hpp>
 
 // names
 constexpr auto COMMAND = "MYTAG_MY_COMMAND";
