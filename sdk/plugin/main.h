@@ -1,2 +1,0 @@
-// main.h
-#include <iostream>
