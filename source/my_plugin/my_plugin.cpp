@@ -1,6 +1,5 @@
 #include "my_plugin.hpp"
 #include <reaper_plugin_functions.h>
-// #include <reascript_vararg.hpp>
 
 // names
 constexpr auto COMMAND = "MYTAG_MY_COMMAND";
@@ -30,7 +29,7 @@ bool defer {false};
 // set action to register,
 // 0 = main action,
 // see reaper_plugin.h
-custom_action_register_t action = {0, COMMAND, ACTION};
+custom_action_register_t action = {0, COMMAND, ACTION, NULL};
 
 // returns current toggle on/off state,
 // see reaper_plugin.h
@@ -51,11 +50,20 @@ bool OnAction(
     KbdSectionInfo* sec, int command, int val, int valhw, int relmode,
     HWND hwnd)
 {
+    // treat unused variables 'pedantically'
+    (void)sec;
+    (void)val;
+    (void)valhw;
+    (void)relmode;
+    (void)hwnd;
+
     // check command
     if (command != commandID) {
         return false;
     }
 
+    // depending on state,
+    // register main function to timer
     if (defer) {
         // flip state on/off
         state = !state;

@@ -1,13 +1,9 @@
-
-// // for mac menus
-// #ifdef __APPLE__
-// # include "../../WDL/swell/resource.h"
-// # include "../../WDL/swell/swell-dlggen.h"
-// # include "../../WDL/swell/resource.rc_mac_dlg"
-// # include "../../WDL/swell/swell-menugen.h"
-// # include "../../WDL/swell/resource.rc_mac_menu"
-// #endif
-
-
+// make sure header is read only once
+#ifndef MY_PLUGIN_HPP
+#define MY_PLUGIN_HPP
+#include <reascript_vararg.hpp>
+ 
 void RegisterMyPlugin();
 void UnregisterMyPlugin();
+
+#endif

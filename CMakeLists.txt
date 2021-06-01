@@ -1,3 +1,4 @@
+# some initial settings
 cmake_minimum_required(VERSION 3.0.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,6 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 project(
     my_reaper_plugin
     VERSION 0.1.0
+    LANGUAGES CXX
 )
 
 # set up reaper-sdk and WDL
@@ -27,10 +29,6 @@ if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/vendor/reaper-sdk/WDL)
         SYMBOLIC)
 endif()
 
-if (MSVC)
-    add_compile_options(/W3 /wd5208)
-endif()
-
 # set up headers
 # reaper-sdk headers
 # reasciprt_vararg.hpp (credits to cfillion)
@@ -41,6 +39,29 @@ target_include_directories(
     ${PROJECT_SOURCE_DIR}/vendor/reaper-sdk/sdk
     ${PROJECT_SOURCE_DIR}/include
 )
+# all targets will 'have' reaper_interface
+link_libraries(reaper_interface)
+
+# avoid certain warning during build
+if (CMAKE_SYSTEM_NAME MATCHES Windows)
+    add_compile_options(/W3 /wd5208)
+endif()
+
+# set .dylib file extension on Mac
+if(CMAKE_SYSTEM_NAME MATCHES Darwin)
+    set(CMAKE_SHARED_MODULE_SUFFIX ".dylib")
+endif()
+
+# some *nix settings
+if (UNIX)
+    add_compile_options(-Wall -Werror -Wpedantic -Wextra)
+    if (NOT APPLE)
+        add_compile_options(-shared -fPIC)
+        set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+        set(BUILD_SHARED_LIBS ON)
+    endif()
+endif()
+
 
 # add source files of plugin (the actual plugin itself)
 # see CMakeList.txt under ./source/
