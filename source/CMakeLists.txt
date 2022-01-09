@@ -1,48 +1,30 @@
-# create reaper_plugin (target)
-# add main source file
-# reaper_plugin is our "main target"
 add_library(
-    reaper_plugin MODULE
+    reaper_plugin OBJECT
     main.cpp
+    my_plugin.cpp
 )
 
-# add my plugin
-# to reaper_plugin build
-# see CMakeLists.txt in ./my_plugin/
-add_subdirectory(my_plugin)
-# and link to reaper_plugin target
-target_link_libraries(
-    reaper_plugin PRIVATE
-    my_plugin
-)
+find_package(WDL REQUIRED)
+target_link_libraries(reaper_plugin WDL::WDL)
 
-# set swell for reaper_plugin
-# if not Windows
-if (NOT CMAKE_SYSTEM_NAME MATCHES Windows)
-    add_library(swell ${CMAKE_SOURCE_DIR}/vendor/WDL/WDL/swell/swell-modstub$<IF:$<BOOL:${APPLE}>,.mm,-generic.cpp>)
-    target_compile_definitions(swell PUBLIC SWELL_PROVIDED_BY_APP)
-    target_compile_options(swell PRIVATE -w)
-    target_link_libraries(reaper_plugin PRIVATE swell)
-    if (CMAKE_SYSTEM_NAME MATCHES Darwin)
-        find_library(APPKIT_LIB AppKit)
-        target_link_libraries(swell PRIVATE ${APPKIT_LIB})
-    endif()
+if(NOT WIN32)
+  find_package(SWELL REQUIRED)
+  target_link_libraries(reaper_plugin SWELL::swell)
 endif()
 
-# build reaper_plugin directly into REAPER UserPlugins
-# for convinience
-if (MSVC)
-    set_target_properties(reaper_plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG $ENV{APPDATA}/REAPER/UserPlugins)
-    set_target_properties(reaper_plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE $ENV{APPDATA}/REAPER/UserPlugins)
-    set_target_properties(reaper_plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY $ENV{APPDATA}/REAPER/UserPlugins)
-elseif (APPLE)
-    set_target_properties(reaper_plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ~/Library/Application\ Support/REAPER/UserPlugins)
-elseif (UNIX)
-    set_target_properties(reaper_plugin PROPERTIES LIBRARY_OUTPUT_DIRECTORY ~/.config/REAPER/UserPlugins)
-endif()
+target_link_libraries(${PROJECT_NAME} reaper_plugin)
 
-# set filename
-# clear prefix
-# filename has to be reaper_something
-# for REAPER to load it
-set_target_properties(reaper_plugin PROPERTIES PREFIX "")
+if(WIN32)
+  target_compile_options(reaper_plugin PUBLIC
+    /W3
+    /WX
+    /wd5208
+    )
+  # target_compile_definitions(reaper_plugin PUBLIC NOMINMAX UNICODE)
+else()
+  target_compile_options(reaper_plugin PUBLIC
+    -Wall -Wextra -Werror -Wpedantic
+    # -Wno-unused-parameter -Wno-missing-field-initializers
+    # -Wno-unused-function -Wno-missing-braces
+  )
+endif()

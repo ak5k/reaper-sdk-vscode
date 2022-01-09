@@ -1,5 +1,5 @@
 // declarations for registering and unregistering my plugin
-#include "my_plugin/my_plugin.hpp"
+#include "my_plugin.hpp"
 
 #define REAPERAPI_IMPLEMENT
 #include <reaper_plugin_functions.h>

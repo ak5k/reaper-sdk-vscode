@@ -31,13 +31,13 @@ Mainstream Linux distributions usually include compiler and many of other necess
 ### `CMakeLists.txt`
 * From VSCode workspace Explorer (Ctrl/Cmd + Shift + E) open up `CMakeLists.txt` file.
 * Configuration for plugin and building/compiling.
-* By default, CMake builds the plugin into `UserPlugins` directory under REAPER resource path.
 ### `source/main.cpp`
 * "The" REAPER plugin.
-### `source/my_plugin/*`
+### `source/my_plugin.cpp`
 * "The" actual source.
 ## First steps
-* By default, VSCode builds a debug version of the plugin and installs it by keyboard shortcut `F7`.
+* By default, VSCode builds a debug version of the plugin it by running `CMake: Build` or keyboard shortcut `F7`.
+* Install plugin with VSCode command `CMake: Install`.
 * Start REAPER, and new plugin and it's Action ("ak5k: my plugin" by default) should show up in the Actions List.
 * Running the Action should result in 'Hello World' Console Message.
 * [VSCode docs](https://code.visualstudio.com/docs/languages/cpp#_tutorials) and [Microsoft C++ docs](https://docs.microsoft.com/en-us/cpp/cpp/) are a helpful resource. And, of course, [ReaScript, JSFX, REAPER Plug-in Extensions, Developer Forum](https://forum.cockos.com/forumdisplay.php?f=3).

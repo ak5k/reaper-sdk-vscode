@@ -1,75 +1,72 @@
-# some initial settings
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.19)
+project(reaper_myplugin LANGUAGES CXX)
+
+include(CheckCompilerFlag)
+include(CheckIncludeFileCXX)
+include(CheckLinkerFlag)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  if(WIN32)
+    set(USER_CONFIG_DIR "$ENV{APPDATA}")
+  elseif(APPLE)
+    set(USER_CONFIG_DIR "~/Library/Application Support")
+  else()
+    set(USER_CONFIG_DIR "~/.config")
+  endif()
+
+  set(CMAKE_INSTALL_PREFIX "${USER_CONFIG_DIR}/REAPER" CACHE PATH
+    "REAPER resource path where to install ReaFab" FORCE)
+endif()
+
+if(CMAKE_OSX_ARCHITECTURES)
+  list(JOIN CMAKE_OSX_ARCHITECTURES "-" ARCH_NAME)
+elseif(MSVC_CXX_ARCHITECTURE_ID)
+  set(ARCH_NAME ${MSVC_CXX_ARCHITECTURE_ID})
+else()
+  set(ARCH_NAME ${CMAKE_SYSTEM_PROCESSOR})
+endif()
+
+STRING(TOLOWER "${ARCH_NAME}" ARCH_NAME)
+
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# the project name and other information
-# initial version
-project(
-    my_reaper_plugin
-    VERSION 0.1.0
-    LANGUAGES CXX
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL     ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE        ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
+
+add_library(${PROJECT_NAME} SHARED)
+include_directories(
+  SYSTEM
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/vendor 
+  ${CMAKE_SOURCE_DIR}/vendor/reaper-sdk/sdk)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  PREFIX "" # disable the "lib" prefix
+  OUTPUT_NAME "reaper_myplugin-${ARCH_NAME}"
+)
+set(REAPER_USER_PLUGINS "UserPlugins")
+
+install(TARGETS ${PROJECT_NAME}
+  CONFIGURATIONS Debug Release
+  RUNTIME DESTINATION "${REAPER_USER_PLUGINS}" # Windows .dll
+  LIBRARY DESTINATION "${REAPER_USER_PLUGINS}" # Linux .so/macOS .dylib
 )
 
-# set up reaper-sdk and WDL
-# perhaps not best practice
-# but for convinience
-# if not setup
-# gets reaper-sdk and WDL via git
-# and symlinks WDL to reaper-sdk
-if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/vendor/reaper-sdk/WDL)
-    file(REMOVE ${CMAKE_CURRENT_LIST_DIR}/vendor/reaper-sdk/WDL)
-    find_package(Git)
-    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-    file(CREATE_LINK 
-        ${CMAKE_CURRENT_LIST_DIR}/vendor/WDL/WDL
-        ${CMAKE_CURRENT_LIST_DIR}/vendor/reaper-sdk/WDL 
-        SYMBOLIC)
-endif()
+if (MSVC AND CMAKE_BUILD_TYPE MATCHES RELEASE)
+    set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+    set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR} )
+    set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR} )
+    set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_CURRENT_BINARY_DIR} )
+    set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_CURRENT_BINARY_DIR} )
+    # etc for the other available configuration types (MinSizeRel, RelWithDebInfo)
+endif ()
 
-# set up headers
-# reaper-sdk headers
-# reasciprt_vararg.hpp (credits to cfillion)
-# and everything else in ./include/
-add_library(reaper_interface INTERFACE)
-target_include_directories(
-    reaper_interface SYSTEM INTERFACE
-    ${PROJECT_SOURCE_DIR}/vendor/reaper-sdk/sdk
-    ${PROJECT_SOURCE_DIR}/include
-)
-# all targets will 'have' reaper_interface
-link_libraries(reaper_interface)
-
-# avoid certain warning during build
-if (CMAKE_SYSTEM_NAME MATCHES Windows)
-    add_compile_options(/W3 /wd5208)
-endif()
-
-# set .dylib file extension on Mac
-if(CMAKE_SYSTEM_NAME MATCHES Darwin)
-    set(CMAKE_SHARED_MODULE_SUFFIX ".dylib")
-endif()
-
-# some *nix settings
-if (UNIX)
-    add_compile_options(-Wall -Werror -Wpedantic -Wextra)
-    if (NOT APPLE)
-        add_compile_options(-shared -fPIC)
-        set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-        set(BUILD_SHARED_LIBS ON)
-    endif()
-endif()
-
-
-# add source files of plugin (the actual plugin itself)
-# see CMakeList.txt under ./source/
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/source)
-
-include(CTest)
-enable_testing()
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
+add_subdirectory(${CMAKE_SOURCE_DIR}/source)
