@@ -5,6 +5,11 @@ include(CheckCompilerFlag)
 include(CheckIncludeFileCXX)
 include(CheckLinkerFlag)
 
+if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0 ")
+    set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
+endif()
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -42,11 +47,6 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE        ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
 
 add_library(${PROJECT_NAME} SHARED)
-include_directories(
-  SYSTEM
-  ${CMAKE_SOURCE_DIR}/include
-  ${CMAKE_SOURCE_DIR}/vendor 
-  ${CMAKE_SOURCE_DIR}/vendor/reaper-sdk/sdk)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
   PREFIX "" # disable the "lib" prefix

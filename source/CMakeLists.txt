@@ -4,13 +4,11 @@ add_library(
     my_plugin.cpp
 )
 
-find_package(WDL REQUIRED)
-target_link_libraries(reaper_plugin WDL::WDL)
-
-if(NOT WIN32)
-  find_package(SWELL REQUIRED)
-  target_link_libraries(reaper_plugin SWELL::swell)
-endif()
+target_include_directories(
+  reaper_plugin SYSTEM PRIVATE
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/vendor 
+  ${CMAKE_SOURCE_DIR}/vendor/reaper-sdk/sdk)
 
 target_link_libraries(${PROJECT_NAME} reaper_plugin)
 
@@ -18,13 +16,18 @@ if(WIN32)
   target_compile_options(reaper_plugin PUBLIC
     /W3
     /WX
-    /wd5208
     )
-  # target_compile_definitions(reaper_plugin PUBLIC NOMINMAX UNICODE)
+   target_compile_definitions(reaper_plugin PUBLIC NOMINMAX)
 else()
   target_compile_options(reaper_plugin PUBLIC
     -Wall -Wextra -Werror -Wpedantic
-    # -Wno-unused-parameter -Wno-missing-field-initializers
-    # -Wno-unused-function -Wno-missing-braces
   )
+endif()
+
+find_package(WDL REQUIRED)
+target_link_libraries(reaper_plugin WDL::WDL)
+
+if(NOT WIN32)
+  find_package(SWELL REQUIRED)
+  target_link_libraries(reaper_plugin SWELL::swell)
 endif()

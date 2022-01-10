@@ -18,6 +18,7 @@ Mainstream Linux distributions usually include compiler and many of other necess
 * Get [reaper-sdk-vscode](https://github.com/ak5k/reaper-sdk-vscode) files, preferably with `git clone --recursive https://github.com/ak5k/reaper-sdk-vscode.git`, or by [creating a new repository from this template](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) and cloning it to local host. Currently templates don't include submodules, in this case [WDL](https://www.cockos.com/wdl/) library.
 * Change directory to root of this repository.
 * Install [VSCode C/C++ Extension Pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack) with `code --verbose --install-extension ms-vscode.cpptools-extension-pack`. This might take a while.
+* If command `code` isn't found on Mac, see [this](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line) and try again.
 * Open new VSCode workspace by issuing command `code .` (in root directory of this repository).
 * VSCode finishes installing the C/C++ Extensions pack. This is indicated in Status Bar.
 * Wait, until all dependencies have been downloaded and installed. This might take a while. 
