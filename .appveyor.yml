@@ -8,8 +8,8 @@ build_script:
   - cmake -B build -DCMAKE_BUILD_TYPE=Release
     -DVCPKG_TARGET_TRIPLET=$TRIPLET -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN
     -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$DEPLOY_TARGET
-  - cmake --build build --target reaper_reafab
-  - '[ "$ARCH" != `uname -m` ] || cmake --build build --target reaper_reafab'
+  - cmake --build build
+  - '[ "$ARCH" != `uname -m` ] || cmake --build build'
 
 for:
   - matrix: { only: [appveyor_build_worker_image: &linux Ubuntu] }
