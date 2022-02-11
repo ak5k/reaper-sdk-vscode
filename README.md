@@ -43,7 +43,7 @@ Mainstream Linux distributions usually include compiler and many of other necess
 * Running the Action should result in 'Hello World' Console Message.
 * [VSCode docs](https://code.visualstudio.com/docs/languages/cpp#_tutorials) and [Microsoft C++ docs](https://docs.microsoft.com/en-us/cpp/cpp/) are a helpful resource. And, of course, [ReaScript, JSFX, REAPER Plug-in Extensions, Developer Forum](https://forum.cockos.com/forumdisplay.php?f=3).
 * Choosing between debug and release builds can be done with `CMake: Select Variant`.
-* Debugging is launched with `F5`. First time, VSCode opens up default Launch Task configuration for debugging. Choose correct Environment and select Default Configuration. In `launch.json` file, edit the `"program":` value to match REAPER executable/binary installation path, e.g. `"program": "C:\\Program Files\\REAPER (x64)\\reaper.exe"`, escaping backslashes on Windows paths.
+* Debugging is launched with `F5`. First time, VSCode opens up default Launch Task configuration for debugging. Choose correct Environment and select Default Configuration. In `launch.json` file, edit the `"program":` value to match REAPER executable/binary installation path, e.g. `"program": "C:/Program Files/REAPER (x64)/reaper.exe"`.
 * [VSCode debugger](https://code.visualstudio.com/docs/cpp/cpp-debug) allows step-by-step code execution, watching variables, etc.
 * On Windows, VSCode needs to be started from Developer PowerShell (or Command Prompt) for VS.
 ![image](https://i.imgur.com/N4LuyFV.gif)
