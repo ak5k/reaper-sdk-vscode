@@ -9,7 +9,7 @@ build_script:
   - cmake --build build
 
 for:
-  - matrix: { only: [ appveyor_build_worker_image: &linux Ubuntu2204 ] }
+  - matrix: { only: [ appveyor_build_worker_image: &linux Ubuntu ] }
     cache:
       - build/vcpkg_installed -> vcpkg.json, cmake/vcpkg-triplets/arch-env.cmake
     install: |-
@@ -91,7 +91,8 @@ for:
     artifacts:
       - path: build/reaper_*.dylib
 
-  - matrix: { only: [ appveyor_build_worker_image: &windows Visual Studio 2022 ] }
+  - matrix: { only: [ appveyor_build_worker_image: &windows ] }
+
     cache:
       - build\vcpkg_installed -> vcpkg.json
     install:
@@ -108,15 +109,18 @@ for:
 
 environment:
   matrix:
-    - job_name: Linux x86 64-bit
+    - job_name: Linux ARM 64-bit
       appveyor_build_worker_image: *linux
-      ARCH: x86_64
+      ARCH: aarch64
     - job_name: macOS ARM 64-bit
       appveyor_build_worker_image: macos
       ARCH: arm64
     - job_name: Windows 64-bit
       appveyor_build_worker_image: *windows
       ARCH: x64
+    - job_name: Linux x86 64-bit
+      appveyor_build_worker_image: *linux
+      ARCH: x86_64
     # - job_name: Windows 32-bit
     #   appveyor_build_worker_image: *windows
     #   ARCH: x86
@@ -129,9 +133,6 @@ environment:
     # - job_name: Linux x86 32-bit
     #   appveyor_build_worker_image: *linux
     #   ARCH: i686
-    - job_name: Linux ARM 64-bit
-      appveyor_build_worker_image: *linux
-      ARCH: aarch64
     # - job_name: Linux ARM 32-bit
     #   appveyor_build_worker_image: *linux
     #   ARCH: armv7l
