@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(MyPlugin LANGUAGES C CXX)
+project(MyPlugin LANGUAGES CXX)
 add_library(${PROJECT_NAME} SHARED)
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
-# target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
 
 include(CheckCXXCompilerFlag)
 include(FetchContent)
