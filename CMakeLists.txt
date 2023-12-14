@@ -1,16 +1,48 @@
-cmake_minimum_required(VERSION 3.19)
-project(reaper_myplugin LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.22)
 
-include(CheckCompilerFlag)
-include(CheckIncludeFileCXX)
-include(CheckLinkerFlag)
+# option(RUNTIME_OPENSSL
+#   "Load OpenSSL at runtime instead of linking against a specific version" OFF)
+project(MyPlugin)
+add_library(${PROJECT_NAME} SHARED)
 
-if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0 ")
-    set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    CACHE STRING "")
+endif()
+
+if(DEFINED ENV{VCPKG_DEFAULT_TRIPLET} AND NOT DEFINED VCPKG_TARGET_TRIPLET)
+  set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_DEFAULT_TRIPLET}" CACHE STRING "")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+include(FetchContent)
+set(FETCHCONTENT_BASE_DIR ${PROJECT_SOURCE_DIR}/lib CACHE PATH "External dependencies path." FORCE)
+
+FetchContent_Declare(WDL
+    GIT_REPOSITORY https://github.com/justinfrankel/WDL
+    GIT_SHALLOW    TRUE
+    GIT_CONFIG     advice.detachedHead=false    # Disable detached HEAD warning for fetching a specific tag
+    GIT_TAG        "origin/main"
+    SOURCE_DIR     "${FETCHCONTENT_BASE_DIR}/WDL"
+    )
+
+FetchContent_Declare(reaper-sdk
+    GIT_REPOSITORY https://github.com/justinfrankel/reaper-sdk
+    GIT_SHALLOW    TRUE
+    GIT_CONFIG     advice.detachedHead=false    # Disable detached HEAD warning for fetching a specific tag
+    GIT_TAG        "origin/main"
+    SOURCE_DIR     "${FETCHCONTENT_BASE_DIR}/reaper-sdk"
+    )
+
+FetchContent_Populate(WDL)
+FetchContent_Populate(reaper-sdk)
+
+find_package(WDL REQUIRED)
+
+if(NOT WIN32)
+  find_package(SWELL REQUIRED)
+endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   if(WIN32)
@@ -22,7 +54,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   endif()
 
   set(CMAKE_INSTALL_PREFIX "${USER_CONFIG_DIR}/REAPER" CACHE PATH
-    "REAPER resource path where to install ReaFab" FORCE)
+    "REAPER resource path where to install ReaPack" FORCE)
 endif()
 
 if(CMAKE_OSX_ARCHITECTURES)
@@ -36,7 +68,6 @@ endif()
 STRING(TOLOWER "${ARCH_NAME}" ARCH_NAME)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
@@ -46,27 +77,99 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL     ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE        ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
 
-add_library(${PROJECT_NAME} SHARED)
+if(VCPKG_TOOLCHAIN)
+  set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL Release)
+  set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release)
+endif()
+
+if(WIN32)
+  foreach(arg
+    CMAKE_C_FLAGS_DEBUG CMAKE_CXX_FLAGS_DEBUG
+    CMAKE_C_FLAGS_RELEASE CMAKE_CXX_FLAGS_RELEASE
+    CMAKE_C_FLAGS_RELWITHDEBINFO CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    CMAKE_C_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_MINSIZEREL
+  )
+    # Embed debug information in the object files
+    string(REGEX REPLACE "/Z[iI]" "/Z7" ${arg} "${${arg}}")
+  endforeach()
+
+  add_compile_options(
+    # Exception handling model
+    /EHsc
+
+    # Enhance optimized debugging
+    $<$<NOT:$<CONFIG:Debug>>:/Zo>
+
+    # Eliminate duplicate strings
+    $<$<NOT:$<CONFIG:Debug>>:/GF>
+
+    # Enable function-level linking
+    $<$<NOT:$<CONFIG:Debug>>:/Gy>
+
+    # Remove unreferenced COMDAT
+    $<$<NOT:$<CONFIG:Debug>>:/Zc:inline>
+  )
+
+  add_link_options(
+    # Remove unreferenced code
+    $<$<NOT:$<CONFIG:Debug>>:/OPT:REF>
+
+    # Remove duplicate sections
+    $<$<NOT:$<CONFIG:Debug>>:/OPT:ICF>
+
+    # Use relative path to the PDB file to avoid exposing the full path
+    /PDBALTPATH:%_PDB%
+  )
+else()
+  add_compile_options(-fsigned-char -fstack-protector-strong -fdiagnostics-color)
+endif()
+
+FILE(GLOB includes 
+    ${PROJECT_SOURCE_DIR}/lib/*/include
+    )
+
+target_include_directories(${PROJECT_NAME}
+    SYSTEM PRIVATE
+        ${includes}
+        )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
   PREFIX "" # disable the "lib" prefix
-  OUTPUT_NAME "reaper_myplugin-${ARCH_NAME}"
+  OUTPUT_NAME "reaper_${PROJECT_NAME}-${ARCH_NAME}"
 )
-set(REAPER_USER_PLUGINS "UserPlugins")
+add_subdirectory(src)
 
+# include global (system) headers
+FILE(GLOB includes 
+    ${PROJECT_SOURCE_DIR}/lib/*/include
+    ${PROJECT_SOURCE_DIR}/lib/reaper-sdk/sdk
+    )
+
+target_include_directories(${PROJECT_NAME}
+    SYSTEM PRIVATE
+        ${includes}
+        )
+
+target_link_libraries(${PROJECT_NAME} WDL::WDL)
+
+if(SWELL_FOUND)
+  target_link_libraries(${PROJECT_NAME} SWELL::swell)
+
+  # Transpile the Win32 resource file
+  find_package(PHP REQUIRED)
+  add_custom_command(
+    OUTPUT  resource.rc_mac_dlg resource.rc_mac_menu
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${CMAKE_CURRENT_SOURCE_DIR}/resource.rc ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${PHP_EXECUTABLE} ${SWELL_RESGEN} --quiet resource.rc
+    DEPENDS ${SWELL_RESGEN}
+    MAIN_DEPENDENCY resource.rc
+  )
+endif()
+
+set(REAPER_USER_PLUGINS "UserPlugins")
 install(TARGETS ${PROJECT_NAME}
-  CONFIGURATIONS Debug Release
+  COMPONENT ReaPack
   RUNTIME DESTINATION "${REAPER_USER_PLUGINS}" # Windows .dll
   LIBRARY DESTINATION "${REAPER_USER_PLUGINS}" # Linux .so/macOS .dylib
 )
-
-if (MSVC AND CMAKE_BUILD_TYPE MATCHES RELEASE)
-    set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
-    set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR} )
-    set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR} )
-    set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_CURRENT_BINARY_DIR} )
-    set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_CURRENT_BINARY_DIR} )
-    # etc for the other available configuration types (MinSizeRel, RelWithDebInfo)
-endif ()
-
-add_subdirectory(${CMAKE_SOURCE_DIR}/source)

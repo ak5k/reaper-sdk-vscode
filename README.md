@@ -13,7 +13,7 @@ Perhaps the easiest way is to install [Homebrew](https://brew.sh/). This will al
 Mainstream Linux distributions usually include compiler and many of other necessary tools. On Ubuntu, command `sudo apt install build-essential cmake gdb git valgrind` installs all necessary tools.
 ### All platforms
 * Install [Visual Studio Code](https://code.visualstudio.com/) (VSCode).
-* Install [Git](https://git-scm.com/downloads), if not already installed. Microsoft's Git for Windows doesn't seem to play well with Visual Studio Code. 
+* Install [Git](https://git-scm.com/downloads), if not already installed. 
 * On Windows, open **Developer PowerShell (or Command Prompt) for VS**. On MacOS and Linux, use regular Terminal. Change directory to user preferred location for source repositories, or make one.
 * Get [reaper-sdk-vscode](https://github.com/ak5k/reaper-sdk-vscode) files, preferably with `git clone --recursive https://github.com/ak5k/reaper-sdk-vscode.git`, or by [creating a new repository from this template](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) and cloning it to local host. Currently templates don't include submodules, in this case [WDL](https://www.cockos.com/wdl/) library.
 * Change directory to root of this repository.
@@ -40,7 +40,7 @@ Mainstream Linux distributions usually include compiler and many of other necess
 * By default, VSCode builds a debug version of the plugin it by running `CMake: Build` or keyboard shortcut `F7`.
 * Install plugin with VSCode command `CMake: Install`.
 * Start REAPER, and new plugin and it's Action ("ak5k: my plugin" by default) should show up in the Actions List.
-* Running the Action should result in 'Hello World' Console Message.
+* Running the Action should result in 'hello, world' Console Message.
 * [VSCode docs](https://code.visualstudio.com/docs/languages/cpp#_tutorials) and [Microsoft C++ docs](https://docs.microsoft.com/en-us/cpp/cpp/) are a helpful resource. And, of course, [ReaScript, JSFX, REAPER Plug-in Extensions, Developer Forum](https://forum.cockos.com/forumdisplay.php?f=3).
 * Choosing between debug and release builds can be done with `CMake: Select Variant`.
 * Debugging is launched with `F5`. First time, VSCode opens up default Launch Task configuration for debugging. Choose correct Environment and select Default Configuration. In `launch.json` file, edit the `"program":` value to match REAPER executable/binary installation path, e.g. `"program": "C:/Program Files/REAPER (x64)/reaper.exe"`.

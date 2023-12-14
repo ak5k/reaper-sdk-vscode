@@ -1,14 +1,19 @@
 #include "my_plugin.hpp"
 #include <reaper_plugin_functions.h>
 
+// enable reaper.defer like behavior,
+// like timed while true loop over main function
+// MainFunctionOfMyPlugin will be registered on REAPER main timer
+bool defer {true};
+
 // names
-auto COMMAND = "MYTAG_MY_COMMAND";
-auto ACTION = "MyTag: My action";
+auto COMMAND = "AK5K_MY_COMMAND";
+auto ACTION = "ak5k: my plugin";
 
 // our "main function" in this example
 void MainFunctionOfMyPlugin()
 {
-    char buf[] = "Hello World\n";
+    char buf[] = "hello, world\n";
     ShowConsoleMsg(buf);
     return;
 }
@@ -21,12 +26,7 @@ int commandID {0};
 // after plugin is loaded
 bool state {false};
 
-// enable reaper.deferlike behavior,
-// more like timed while true loop over main function
-// MainFunctionOfMyPlugin will be registered on timer
-bool defer {false};
-
-// set action to register,
+// set action,
 // 0 = main action,
 // see reaper_plugin.h
 custom_action_register_t action = {0, COMMAND, ACTION, NULL};
@@ -35,10 +35,12 @@ custom_action_register_t action = {0, COMMAND, ACTION, NULL};
 // see reaper_plugin.h
 int ToggleActionCallback(int command)
 {
-    if (command != commandID) {
+    if (command != commandID)
+    {
         return -1;
     }
-    else if (state) {
+    else if (state)
+    {
         return 1;
     }
     return 0;
@@ -46,9 +48,8 @@ int ToggleActionCallback(int command)
 
 // runs the main function on command,
 // see reaper_plugin_functions.h
-bool OnAction(
-    KbdSectionInfo* sec, int command, int val, int valhw, int relmode,
-    HWND hwnd)
+bool OnAction(KbdSectionInfo* sec, int command, int val, int valhw, int relmode,
+              HWND hwnd)
 {
     // treat unused variables 'pedantically'
     (void)sec;
@@ -58,27 +59,32 @@ bool OnAction(
     (void)hwnd;
 
     // check command
-    if (command != commandID) {
+    if (command != commandID)
+    {
         return false;
     }
 
     // depending on state,
     // register main function to timer
-    if (defer) {
+    if (defer)
+    {
         // flip state on/off
         state = !state;
 
-        if (state) {
+        if (state)
+        {
             // "reaper.defer(main)"
             plugin_register("timer", (void*)MainFunctionOfMyPlugin);
         }
-        else {
+        else
+        {
             // "reaper.atexit(shutdown)"
             plugin_register("-timer", (void*)MainFunctionOfMyPlugin);
             // shutdown stuff
         }
     }
-    else {
+    else
+    {
         // call main function once
         MainFunctionOfMyPlugin();
     }
@@ -92,7 +98,8 @@ void MenuHook(const char* menuidstr, HMENU menu, int flag)
     if (strcmp(menuidstr, "Main extensions") || flag != 0)
         return;
 
-    if (!menu) {
+    if (!menu)
+    {
         menu = CreatePopupMenu();
     }
 
@@ -117,7 +124,8 @@ void RegisterMyPlugin()
     commandID = plugin_register("custom_action", &action);
 
     // register action on/off state and callback function
-    if (defer) {
+    if (defer)
+    {
         plugin_register("toggleaction", (void*)ToggleActionCallback);
     }
 
