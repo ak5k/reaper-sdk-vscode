@@ -39,12 +39,12 @@ FetchContent_Declare(reaper-sdk
 FetchContent_Populate(WDL)
 FetchContent_Populate(reaper-sdk)
 
-find_path(WDL_INCLUDE_DIR
-  NAMES WDL/wdltypes.h
-  PATHS ${CMAKE_SOURCE_DIR}/lib/WDL
-  NO_DEFAULT_PATH
-)
-mark_as_advanced(WDL_INCLUDE_DIR)
+file(
+  COPY 
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/WDL/ 
+  DESTINATION 
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/reaper-sdk/
+  )
 
 # include global (system) headers
 FILE(GLOB includes 
@@ -55,7 +55,6 @@ FILE(GLOB includes
 target_include_directories(${PROJECT_NAME}
     SYSTEM PRIVATE
         ${includes}
-        ${WDL_INCLUDE_DIR}
         )
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
