@@ -18,9 +18,11 @@ add_library(wdl ${WDL_DIR}/wingui/wndsize.cpp)
 
 target_compile_definitions(wdl INTERFACE WDL_NO_DEFINE_MINMAX)
 target_include_directories(wdl INTERFACE ${WDL_INCLUDE_DIR})
-target_compile_options(wdl -Wno-narrowing)
 
 if(NOT WIN32)
+  if (NOT APPLE)
+    target_compile_options(wdl -Wno-narrowing)
+  endif()
   find_package(SWELL REQUIRED)
   target_link_libraries(wdl SWELL::swell)
 endif()
