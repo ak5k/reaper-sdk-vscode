@@ -83,12 +83,12 @@ for:
 
 environment:
   matrix:
-    - job_name: Linux ARM 64-bit
-      appveyor_build_worker_image: *linux
-      ARCH: aarch64
     - job_name: macOS ARM 64-bit
       appveyor_build_worker_image: *macos
       ARCH: arm64
+    - job_name: Linux ARM 64-bit
+      appveyor_build_worker_image: *linux
+      ARCH: aarch64
     - job_name: Windows 64-bit
       appveyor_build_worker_image: *windows
       ARCH: x64
