@@ -39,11 +39,24 @@ FetchContent_Declare(reaper-sdk
 FetchContent_Populate(WDL)
 FetchContent_Populate(reaper-sdk)
 
-find_package(WDL REQUIRED)
+find_path(WDL_INCLUDE_DIR
+  NAMES WDL/wdltypes.h
+  PATHS ${CMAKE_SOURCE_DIR}/lib/WDL
+  NO_DEFAULT_PATH
+)
+mark_as_advanced(WDL_INCLUDE_DIR)
 
-if(NOT WIN32)
-  find_package(SWELL REQUIRED)
-endif()
+# include global (system) headers
+FILE(GLOB includes 
+    ${PROJECT_SOURCE_DIR}/lib/*/include
+    ${PROJECT_SOURCE_DIR}/lib/reaper-sdk/sdk
+    )
+
+target_include_directories(${PROJECT_NAME}
+    SYSTEM PRIVATE
+        ${includes}
+        ${WDL_INCLUDE_DIR}
+        )
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   if(WIN32)
@@ -122,51 +135,14 @@ if(WIN32)
     /PDBALTPATH:%_PDB%
   )
 else()
-  add_compile_options(-fsigned-char -fstack-protector-strong -fdiagnostics-color)
+  # add_compile_options(-fsigned-char -fstack-protector-strong -fdiagnostics-color)
 endif()
-
-FILE(GLOB includes 
-    ${PROJECT_SOURCE_DIR}/lib/*/include
-    )
-
-target_include_directories(${PROJECT_NAME}
-    SYSTEM PRIVATE
-        ${includes}
-        )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
   PREFIX "" # disable the "lib" prefix
   OUTPUT_NAME "reaper_${PROJECT_NAME}-${ARCH_NAME}"
 )
 add_subdirectory(src)
-
-# include global (system) headers
-FILE(GLOB includes 
-    ${PROJECT_SOURCE_DIR}/lib/*/include
-    ${PROJECT_SOURCE_DIR}/lib/reaper-sdk/sdk
-    )
-
-target_include_directories(${PROJECT_NAME}
-    SYSTEM PRIVATE
-        ${includes}
-        )
-
-target_link_libraries(${PROJECT_NAME} WDL::WDL)
-
-if(SWELL_FOUND)
-  target_link_libraries(${PROJECT_NAME} SWELL::swell)
-
-  # Transpile the Win32 resource file
-  find_package(PHP REQUIRED)
-  add_custom_command(
-    OUTPUT  resource.rc_mac_dlg resource.rc_mac_menu
-    COMMAND ${CMAKE_COMMAND} -E copy
-      ${CMAKE_CURRENT_SOURCE_DIR}/resource.rc ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${PHP_EXECUTABLE} ${SWELL_RESGEN} --quiet resource.rc
-    DEPENDS ${SWELL_RESGEN}
-    MAIN_DEPENDENCY resource.rc
-  )
-endif()
 
 set(REAPER_USER_PLUGINS "UserPlugins")
 install(TARGETS ${PROJECT_NAME}
