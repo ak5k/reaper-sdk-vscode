@@ -21,7 +21,7 @@ target_include_directories(wdl INTERFACE ${WDL_INCLUDE_DIR})
 
 if(NOT WIN32)
   find_package(SWELL REQUIRED)
-  target_link_libraries(wdl SWELL::swell)
+  target_link_libraries(wdl INTERFACE SWELL::swell)
 endif()
 
 add_library(WDL::WDL ALIAS wdl)
