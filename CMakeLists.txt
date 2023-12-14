@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 project(MyPlugin LANGUAGES C CXX)
 add_library(${PROJECT_NAME} SHARED)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+# target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 include(CheckCXXCompilerFlag)
 include(FetchContent)
@@ -39,12 +40,12 @@ FetchContent_Declare(reaper-sdk
 FetchContent_Populate(WDL)
 FetchContent_Populate(reaper-sdk)
 
-file(
-  COPY 
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/WDL/ 
-  DESTINATION 
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/reaper-sdk/
-  )
+# file(
+#   COPY 
+#   ${CMAKE_CURRENT_SOURCE_DIR}/lib/WDL/ 
+#   DESTINATION 
+#   ${CMAKE_CURRENT_SOURCE_DIR}/lib/reaper-sdk/
+#   )
 
 # include global (system) headers
 FILE(GLOB includes 
@@ -56,6 +57,29 @@ target_include_directories(${PROJECT_NAME}
     SYSTEM PRIVATE
         ${includes}
         )
+
+find_package(WDL REQUIRED)
+
+if(NOT WIN32)
+  find_package(SWELL REQUIRED)
+endif()
+
+target_link_libraries(${PROJECT_NAME} WDL::WDL)
+
+if(SWELL_FOUND)
+  target_link_libraries(${PROJECT_NAME} SWELL::swell)
+
+  # Transpile the Win32 resource file
+  find_package(PHP REQUIRED)
+  add_custom_command(
+    OUTPUT  resource.rc_mac_dlg resource.rc_mac_menu
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${CMAKE_CURRENT_SOURCE_DIR}/resource.rc ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${PHP_EXECUTABLE} ${SWELL_RESGEN} --quiet resource.rc
+    DEPENDS ${SWELL_RESGEN}
+    MAIN_DEPENDENCY resource.rc
+  )
+endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   if(WIN32)
@@ -134,7 +158,7 @@ if(WIN32)
     /PDBALTPATH:%_PDB%
   )
 else()
-  # add_compile_options(-fsigned-char -fstack-protector-strong -fdiagnostics-color)
+  add_compile_options(-fsigned-char -fstack-protector-strong -fdiagnostics-color)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
