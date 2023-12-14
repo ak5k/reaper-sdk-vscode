@@ -39,14 +39,6 @@ FetchContent_Declare(reaper-sdk
 FetchContent_Populate(WDL)
 FetchContent_Populate(reaper-sdk)
 
-# file(
-#   COPY 
-#   ${CMAKE_CURRENT_SOURCE_DIR}/lib/WDL/ 
-#   DESTINATION 
-#   ${CMAKE_CURRENT_SOURCE_DIR}/lib/reaper-sdk/
-#   )
-
-# include global (system) headers
 FILE(GLOB includes 
     ${PROJECT_SOURCE_DIR}/lib/*/include
     ${PROJECT_SOURCE_DIR}/lib/reaper-sdk/sdk
