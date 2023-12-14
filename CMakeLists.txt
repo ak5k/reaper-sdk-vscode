@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(MyPlugin)
+project(MyPlugin LANGUAGES C CXX)
 add_library(${PROJECT_NAME} SHARED)
 
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
