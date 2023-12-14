@@ -92,32 +92,6 @@ bool OnAction(KbdSectionInfo* sec, int command, int val, int valhw, int relmode,
     return true;
 }
 
-// add menu entry under Extensions
-void MenuHook(const char* menuidstr, HMENU menu, int flag)
-{
-    if (strcmp(menuidstr, "Main extensions") || flag != 0)
-        return;
-
-    if (!menu)
-    {
-        menu = CreatePopupMenu();
-    }
-
-    int pos = GetMenuItemCount(menu);
-
-    MENUITEMINFO mii;
-    mii.cbSize = sizeof(mii);
-    mii.fMask = MIIM_TYPE | MIIM_ID;
-    mii.fType = MFT_STRING;
-    // menu name
-    mii.dwTypeData = (char*)ACTION;
-    // menu command
-    mii.wID = commandID;
-    // insert as next menu item
-    InsertMenuItem(menu, pos++, true, &mii);
-    return;
-}
-
 void RegisterMyPlugin()
 {
     // register action name and get command_id
@@ -131,10 +105,6 @@ void RegisterMyPlugin()
 
     // register run action/command
     plugin_register("hookcommand2", (void*)OnAction);
-
-    // register menu
-    plugin_register("hookcustommenu", (void*)MenuHook);
-    AddExtensionsMainMenu();
 }
 
 void UnregisterMyPlugin()
@@ -142,6 +112,5 @@ void UnregisterMyPlugin()
     plugin_register("-custom_action", &action);
     plugin_register("-toggleaction", (void*)ToggleActionCallback);
     plugin_register("-hookcommand2", (void*)OnAction);
-    plugin_register("-hookcustommenu", (void*)MenuHook);
     return;
 }
