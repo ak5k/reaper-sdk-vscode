@@ -9,7 +9,7 @@ build_script:
   - cmake --build build
 
 for:
-  - matrix: { only: [ appveyor_build_worker_image: &linux Ubuntu ] }
+  - matrix: { only: [ appveyor_build_worker_image: &linux Ubuntu2204 ] }
     cache:
       - build/vcpkg_installed -> vcpkg.json, cmake/vcpkg-triplets/arch-env.cmake
     install: |-
