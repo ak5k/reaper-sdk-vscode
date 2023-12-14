@@ -141,6 +141,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   PREFIX "" # disable the "lib" prefix
   OUTPUT_NAME "reaper_${PROJECT_NAME}-${ARCH_NAME}"
 )
+
 add_subdirectory(src)
 
 set(REAPER_USER_PLUGINS "UserPlugins")
