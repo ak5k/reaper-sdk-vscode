@@ -56,6 +56,7 @@ for:
   - matrix: { only: [ appveyor_build_worker_image: &macos macos-monterey ] }
     cache:
       - build/vcpkg_installed -> vcpkg.json, cmake/vcpkg-triplets/arch-env.cmake
+      - /Users/appveyor/Library/Caches/Homebrew/ -> appveyor.yml
     install:
       - |-
         echo " "
