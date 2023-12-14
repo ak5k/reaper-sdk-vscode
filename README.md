@@ -47,3 +47,4 @@ Mainstream Linux distributions usually include compiler and many of other necess
 * [VSCode debugger](https://code.visualstudio.com/docs/cpp/cpp-debug) allows step-by-step code execution, watching variables, etc.
 * On Windows, VSCode needs to be started from Developer PowerShell (or Command Prompt) for VS.
 ![image](https://i.imgur.com/N4LuyFV.gif)
+
