@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.15)
 
-# option(RUNTIME_OPENSSL
-#   "Load OpenSSL at runtime instead of linking against a specific version" OFF)
 project(MyPlugin)
 add_library(${PROJECT_NAME} SHARED)
 
