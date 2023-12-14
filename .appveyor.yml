@@ -91,7 +91,7 @@ for:
     artifacts:
       - path: build/reaper_*.dylib
 
-  - matrix: { only: [ appveyor_build_worker_image: &windows ] }
+  - matrix: { only: [ appveyor_build_worker_image: *windows ] }
 
     cache:
       - build\vcpkg_installed -> vcpkg.json
