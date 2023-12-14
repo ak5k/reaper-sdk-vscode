@@ -4,6 +4,9 @@ project(MyPlugin LANGUAGES C CXX)
 add_library(${PROJECT_NAME} SHARED)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
+include(CheckCXXCompilerFlag)
+include(FetchContent)
+
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     CACHE STRING "")
@@ -15,7 +18,6 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-include(FetchContent)
 set(FETCHCONTENT_BASE_DIR ${PROJECT_SOURCE_DIR}/lib CACHE PATH "External dependencies path." FORCE)
 
 FetchContent_Declare(WDL
