@@ -9,7 +9,7 @@ build_script:
   - cmake --build build
 
 for:
-  - matrix: { only: [ appveyor_build_worker_image: &linux Ubuntu ] }
+  - matrix: { only: [ appveyor_build_worker_image: &linux Ubuntu2204 ] }
     cache:
       - build/vcpkg_installed -> vcpkg.json, cmake/vcpkg-triplets/arch-env.cmake
     install: |-
@@ -18,7 +18,7 @@ for:
       sudo sed -i '/arch=/! s/^deb/deb [arch=amd64,i386]/' /etc/apt/sources.list
 
       install-deps() {
-        sudo add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
+        # sudo add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
         local arch="$1"; shift
         local native=("$@" php-cli qemu-user-binfmt)
 
@@ -53,7 +53,7 @@ for:
     artifacts:
       - path: build/reaper_*.so
 
-  - matrix: { only: [ appveyor_build_worker_image: macos, appveyor_build_worker_image: macos-mojave ] }
+  - matrix: { only: [ appveyor_build_worker_image: &macos macos-monterey ] }
     cache:
       - build/vcpkg_installed -> vcpkg.json, cmake/vcpkg-triplets/arch-env.cmake
     install:
@@ -85,16 +85,19 @@ environment:
       appveyor_build_worker_image: *linux
       ARCH: aarch64
     - job_name: macOS ARM 64-bit
-      appveyor_build_worker_image: macos
+      appveyor_build_worker_image: *macos
       ARCH: arm64
     - job_name: Windows 64-bit
       appveyor_build_worker_image: *windows
       ARCH: x64
+    - job_name: Windows 32-bit
+      appveyor_build_worker_image: *windows
+      ARCH: x86
     - job_name: Linux x86 64-bit
       appveyor_build_worker_image: *linux
       ARCH: x86_64
     - job_name: macOS x86 64-bit
-      appveyor_build_worker_image: macos
+      appveyor_build_worker_image: *macos
       ARCH: x86_64
     - job_name: Linux x86 32-bit
       appveyor_build_worker_image: *linux
