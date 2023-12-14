@@ -33,7 +33,7 @@ for:
         sudo aptitude install -yR ${native[@]} > /dev/null
       }
 
-      # sudo update-alternatives --set gcc /usr/bin/gcc-11
+      # sudo update-alternatives --set gcc /usr/bin/gcc-9
 
       case $ARCH in
       x86_64)
