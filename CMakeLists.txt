@@ -1,8 +1,21 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(MyPlugin LANGUAGES CXX)
+project(MyPlugin LANGUAGES C CXX)
 add_library(${PROJECT_NAME} SHARED)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
+
+if(WIN32)
+  target_compile_options(
+    ${PROJECT_NAME} 
+      PRIVATE 
+      /W3 /WX)
+else()
+  target_compile_options(
+    ${PROJECT_NAME}
+      PRIVATE
+      -Wall -Wextra -Werror -Wpedantic
+  )
+endif()
 
 include(CheckCXXCompilerFlag)
 include(FetchContent)
