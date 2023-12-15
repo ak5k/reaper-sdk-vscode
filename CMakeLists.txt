@@ -58,8 +58,7 @@ FILE(GLOB includes
     )
 
 target_include_directories(${PROJECT_NAME}
-    SYSTEM PRIVATE
-        ${includes}
+        SYSTEM PUBLIC ${includes}
         )
 
 find_package(WDL REQUIRED)

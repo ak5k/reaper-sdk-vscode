@@ -7,14 +7,13 @@
 bool defer {true};
 
 // names
-auto COMMAND = "AK5K_MY_COMMAND";
-auto ACTION = "ak5k: my plugin";
+const auto COMMAND = "AK5K_MY_COMMAND";
+const auto ACTION = "ak5k: my plugin";
 
 // our "main function" in this example
 void MainFunctionOfMyPlugin()
 {
-    char buf[] = "hello, world\n";
-    ShowConsoleMsg(buf);
+    ShowConsoleMsg("hello, world\n");
     return;
 }
 
@@ -33,7 +32,7 @@ custom_action_register_t action = {0, COMMAND, ACTION, NULL};
 
 // returns current toggle on/off state,
 // see reaper_plugin.h
-int ToggleActionCallback(int command)
+auto ToggleActionCallback(int command) -> int
 {
     if (command != commandID)
     {
@@ -48,8 +47,8 @@ int ToggleActionCallback(int command)
 
 // runs the main function on command,
 // see reaper_plugin_functions.h
-bool OnAction(KbdSectionInfo* sec, int command, int val, int valhw, int relmode,
-              HWND hwnd)
+auto OnAction(KbdSectionInfo* sec, int command, int val, int valhw, int relmode,
+              HWND hwnd) -> bool
 {
     // treat unused variables 'pedantically'
     (void)sec;
