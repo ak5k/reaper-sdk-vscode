@@ -105,7 +105,8 @@ auto reascript_api_function_example_defstring =
     "\0"
     "help text for myfunction\n"
     "If optional input parameter is provided, produces optional return "
-    "value.\n";
+    "value.\n"
+    "If boolean is true, copies input string to optional output string.\n";
 
 // example api function
 auto ReaScriptAPIFunctionExample(
