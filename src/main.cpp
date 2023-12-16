@@ -1,23 +1,26 @@
-#include "my_plugin.hpp"
 #define REAPERAPI_IMPLEMENT
 #include <reaper_plugin_functions.h>
 
-REAPER_PLUGIN_HINSTANCE g_hInst; // used for dialogs, if any
+#include "my_plugin.hpp"
 
 extern "C"
 {
     REAPER_PLUGIN_DLL_EXPORT auto REAPER_PLUGIN_ENTRYPOINT(
         REAPER_PLUGIN_HINSTANCE hInstance, reaper_plugin_info_t* rec) -> int
     {
-        g_hInst = hInstance;
+        MyPlugin& my_plugin_instance = MyPlugin::GetInstance();
         if (rec && REAPERAPI_LoadAPI(rec->GetFunc) == 0)
         {
-            RegisterMyPlugin();
+            my_plugin_instance.SetReaperPluginInstance(hInstance);
+
+            my_plugin_instance.Register();
+
             return 1;
         }
         else
         {
-            UnregisterMyPlugin();
+            // quit
+            my_plugin_instance.Unregister();
             return 0;
         }
     }
