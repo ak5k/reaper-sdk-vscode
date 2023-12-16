@@ -1,7 +1,7 @@
+#include "my_plugin.hpp"
+
 #define REAPERAPI_IMPLEMENT
 #include <reaper_plugin_functions.h>
-
-#include "my_plugin.hpp"
 
 extern "C"
 {
