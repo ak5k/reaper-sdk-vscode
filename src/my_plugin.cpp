@@ -135,7 +135,7 @@ auto ReaScriptAPIFunctionExample(
         // copy string_of_text to return_stringOutOptional
         // *_sz is length/size of zero terminated string (C-style char array)
         memcpy(return_stringOutOptional, string_of_text,
-               min(return_string_sz, string_of_text_sz) * sizeof(char));
+               std::min(return_string_sz, string_of_text_sz) * sizeof(char));
     }
     return whole_number * whole_number;
 };

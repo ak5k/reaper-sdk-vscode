@@ -1,3 +1,7 @@
+// std::min
+#define NOMINMAX
+#include <algorithm>
+
 #include <reaper_plugin_functions.h>
 
 namespace my_plugin
