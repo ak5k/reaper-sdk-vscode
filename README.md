@@ -34,7 +34,7 @@ Mainstream Linux distributions usually include compiler and many of other necess
 * Configuration for plugin and building/compiling.
 ### `src/main.cpp`
 * "The" REAPER plugin.
-### `src/my_plugin.hpp`
+### `src/my_plugin.cpp`
 * "The" actual source.
 ## First steps
 * By default, VSCode builds a debug version of the plugin it by running `CMake: Build` or keyboard shortcut `F7`.
