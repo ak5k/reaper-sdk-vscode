@@ -90,12 +90,6 @@ auto OnAction(KbdSectionInfo* sec, int command, int val, int valhw, int relmode,
     return true;
 }
 
-// my plugins simple example data structure
-struct MyPlugin
-{
-    int x = 0;
-} my_plugin;
-
 // definition string for example API function
 auto reascript_api_function_example_defstring =
     "int" // return type
