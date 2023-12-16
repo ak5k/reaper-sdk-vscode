@@ -32,9 +32,9 @@ Mainstream Linux distributions usually include compiler and many of other necess
 ### `CMakeLists.txt`
 * From VSCode workspace Explorer (Ctrl/Cmd + Shift + E) open up `CMakeLists.txt` file.
 * Configuration for plugin and building/compiling.
-### `source/main.cpp`
+### `src/main.cpp`
 * "The" REAPER plugin.
-### `source/my_plugin.cpp`
+### `src/my_plugin.hpp`
 * "The" actual source.
 ## First steps
 * By default, VSCode builds a debug version of the plugin it by running `CMake: Build` or keyboard shortcut `F7`.
