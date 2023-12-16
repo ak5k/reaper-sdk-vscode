@@ -1,5 +1,3 @@
-// void RegisterMyPlugin();
-// void UnregisterMyPlugin();
 #include <reaper_plugin_functions.h>
 
 // register the main function on timer
