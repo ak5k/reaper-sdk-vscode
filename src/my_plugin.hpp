@@ -77,6 +77,7 @@ class MyPlugin
   private:
     // hidden private constructor
     MyPlugin() = default;
+
     int command_id {0};
     bool toggle_state {false};
 
