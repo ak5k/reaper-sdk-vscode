@@ -9,7 +9,7 @@ extern "C"
         REAPER_PLUGIN_HINSTANCE hInstance, reaper_plugin_info_t* rec) -> int
     {
         MyPlugin& my_plugin_instance = MyPlugin::GetInstance();
-        if (rec && REAPERAPI_LoadAPI(rec->GetFunc) == 0)
+        if (rec != nullptr && REAPERAPI_LoadAPI(rec->GetFunc) == 0)
         {
             my_plugin_instance.SetReaperPluginInstance(hInstance);
 
@@ -17,11 +17,9 @@ extern "C"
 
             return 1;
         }
-        else
-        {
-            // quit
-            my_plugin_instance.Unregister();
-            return 0;
-        }
+
+        // quit
+        my_plugin_instance.Unregister();
+        return 0;
     }
 }

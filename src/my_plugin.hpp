@@ -30,15 +30,14 @@ class MyPlugin
     auto SetReaperPluginInstance(REAPER_PLUGIN_HINSTANCE param)
     {
         hInstance = param;
-        return;
     }
 
-    auto GetCommandId()
+    [[nodiscard]] auto GetCommandId() const
     {
         return command_id;
     }
 
-    auto GetToggleState()
+    [[nodiscard]] auto GetToggleState() const
     {
         return toggle_state;
     }
@@ -46,13 +45,11 @@ class MyPlugin
     auto SetCommandId(int param)
     {
         command_id = param;
-        return;
     }
 
     auto SetToggleState(bool param)
     {
         toggle_state = param;
-        return;
     }
 
     auto Register()
@@ -68,7 +65,6 @@ class MyPlugin
 
         // register run action/command
         plugin_register("hookcommand2", (void*)OnAction);
-        return;
     }
 
     auto Unregister()
@@ -76,7 +72,6 @@ class MyPlugin
         plugin_register("-custom_action", &action);
         plugin_register("-toggleaction", (void*)ToggleActionCallback);
         plugin_register("-hookcommand2", (void*)OnAction);
-        return;
     }
 
   private:
@@ -93,7 +88,6 @@ class MyPlugin
     static auto MainFunctionOfMyPlugin()
     {
         ShowConsoleMsg("hello, world\n");
-        return;
     }
 
     static auto ToggleActionCallback(int command) -> int
@@ -101,10 +95,14 @@ class MyPlugin
         MyPlugin& my_plugin_instance = MyPlugin::GetInstance();
 
         if (command != my_plugin_instance.GetCommandId())
+        {
             return -1;
+        }
 
         if (my_plugin_instance.GetToggleState())
+        {
             return 1;
+        }
 
         return 0;
     }
@@ -123,7 +121,9 @@ class MyPlugin
 
         // check command
         if (command != my_plugin_instance.GetCommandId())
+        {
             return false;
+        }
 
         // depending on state,
         // register main function to timer
