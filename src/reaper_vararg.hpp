@@ -22,8 +22,8 @@ struct ReaScriptAPI;
 template <typename R, typename... Args>
 struct ReaScriptAPI<R (*)(Args...)>
 {
-    static const void* applyVarArg(R (*fn)(Args...), void** argv,
-                                   const int argc)
+    static auto applyVarArg(R (*function)(Args...), void** argv, const int argc)
+        -> const void*
     {
         if (static_cast<size_t>(argc) < sizeof...(Args))
             return nullptr;
@@ -32,12 +32,12 @@ struct ReaScriptAPI<R (*)(Args...)>
 
         if constexpr (std::is_void_v<R>)
         {
-            std::apply(fn, args);
+            std::apply(function, args);
             return nullptr;
         }
         else if constexpr (std::is_floating_point_v<R>)
         {
-            const auto value {std::apply(fn, args)};
+            const auto value {std::apply(function, args)};
             void* storage {argv[argc - 1]};
             *static_cast<double*>(storage) = value;
             return storage;
@@ -47,7 +47,7 @@ struct ReaScriptAPI<R (*)(Args...)>
             // cast numbers to have the same size as a pointer to avoid warnings
             using IntPtrR =
                 std::conditional_t<std::is_pointer_v<R>, R, uintptr_t>;
-            const auto value {static_cast<IntPtrR>(std::apply(fn, args))};
+            const auto value {static_cast<IntPtrR>(std::apply(function, args))};
             return reinterpret_cast<const void*>(value);
         }
     }
@@ -57,7 +57,7 @@ struct ReaScriptAPI<R (*)(Args...)>
     using NthType = typename std::tuple_element<I, std::tuple<Args...>>::type;
 
     template <size_t... I>
-    static auto makeTuple(void** argv, std::index_sequence<I...>)
+    static auto makeTuple(void** argv, std::index_sequence<I...> /*unused*/)
     {
         // C++17 is amazing
         return std::make_tuple(
@@ -67,8 +67,8 @@ struct ReaScriptAPI<R (*)(Args...)>
     }
 };
 
-template <auto fn>
-const void* InvokeReaScriptAPI(void** argv, int argc)
+template <auto function>
+auto InvokeReaScriptAPI(void** argv, int argc) -> const void*
 {
-    return ReaScriptAPI<decltype(fn)>::applyVarArg(fn, argv, argc);
+    return ReaScriptAPI<decltype(function)>::applyVarArg(function, argv, argc);
 }
