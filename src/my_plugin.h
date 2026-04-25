@@ -2,7 +2,7 @@
 
 #include "config.h"
 
-#include <WDL/wdltypes.h> // might be unnecessary in future
+#include <WDL/wdltypes.h>
 
 #include <reaper_plugin_functions.h>
 

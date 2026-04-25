@@ -6,84 +6,73 @@
 #define STRINGIZE(x) STRINGIZE_DEF(x)
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
-// register main function on timer
-// true or false
 #define API_ID MYAPI
 #define RUN_ON_TIMER true
 
-// confine my plugin to namespace
 namespace PROJECT_NAME
 {
 
-// some global non-const variables
-// the necessary 'evil'
+// Global state required by REAPER callbacks.
 int command_id{0};
 bool toggle_action_state{false};
 constexpr auto command_name = "AK5K_" STRINGIZE(PROJECT_NAME) "_COMMAND";
 constexpr auto action_name = "ak5k: " STRINGIZE(PROJECT_NAME);
 custom_action_register_t action = {0, command_name, action_name, nullptr};
 
-// hInstance is declared in header file my_plugin.hpp
-// defined here
+// hInstance is declared in my_plugin.h and defined here.
 REAPER_PLUGIN_HINSTANCE hInstance{nullptr}; // used for dialogs, if any
 
-// the main function of my plugin
-// gets called via callback or timer
+// Entry point invoked directly or from REAPER's timer hook.
 void MainFunctionOfMyPlugin()
 {
     ShowConsoleMsg("hello, world\n");
 }
 
-// c++11 trailing return type syntax
-// REAPER calls this to check my plugin toggle state
+// REAPER calls this to query the action toggle state.
 auto ToggleActionCallback(int command) -> int
 {
     if (command != command_id)
     {
-        // not quite our command_id
+        // Command is not ours.
         return -1;
     }
-    if (toggle_action_state) // if toggle_action_state == true
+    if (toggle_action_state)
         return 1;
     return 0;
 }
 
-// this gets called when my plugin action is run (e.g. from action list)
+// Called when the action is triggered from REAPER's action list.
 bool OnAction(KbdSectionInfo* sec, int command, int val, int valhw, int relmode, HWND hwnd)
 {
-    // treat unused variables 'pedantically'
+    // Unused in this handler.
     (void)sec;
     (void)val;
     (void)valhw;
     (void)relmode;
     (void)hwnd;
 
-    // check command
     if (command != command_id)
         return false;
 
-    // depending on RUN_ON_TIMER #definition,
-    // register my plugins main function to timer
-    if (RUN_ON_TIMER) // RUN_ON_TIMER is true or false
+    // Toggle timer registration or execute once, based on build-time mode.
+    if (RUN_ON_TIMER)
     {
-        // flip state on/off
+        // Flip action state on or off.
         toggle_action_state = !toggle_action_state;
 
-        if (toggle_action_state) // if toggle_action_state == true
+        if (toggle_action_state)
         {
-            // "reaper.defer(main)"
+            // Equivalent to reaper.defer(main).
             plugin_register("timer", (void*)MainFunctionOfMyPlugin);
         }
         else
         {
-            // "reaper.atexit(shutdown)"
+            // Equivalent to reaper.atexit(shutdown).
             plugin_register("-timer", (void*)MainFunctionOfMyPlugin);
-            // shutdown stuff
         }
     }
     else
     {
-        // else call main function once
         MainFunctionOfMyPlugin();
     }
 
@@ -124,17 +113,15 @@ int ReaScriptAPIFunctionExample(
     // if optional integer is provided
     if (input_parameterInOptional != nullptr)
     {
-        // assign value to deferenced output pointer
+        // Assign computed value to the optional output pointer.
         *return_valueOutOptional =
-            // by making this awesome calculation
             (*input_parameterInOptional + whole_number + decimal_number);
     }
 
-    // lets conditionally produce optional output string
+    // Conditionally produce optional output string.
     if (boolean_value)
     {
-        // copy string_of_text to return_stringOutOptional
-        // *_sz is length/size of zero terminated string (C-style char array)
+        // *_sz indicates C-string buffer size including the null terminator.
         memcpy(return_stringOutOptional, string_of_text, min(return_string_sz, string_of_text_sz) * sizeof(char));
     }
     return whole_number * whole_number;
@@ -162,22 +149,20 @@ void GetVersion(int* majorOut, int* minorOut, int* patchOut, int* tweakOut, char
     commitOut[min(commitOut_sz - 1, (int)strlen(commit))] = '\0'; // Ensure null termination
 }
 
-// when my plugin gets loaded
-// function to register my plugins 'stuff' with REAPER
+// Register actions and exported API functions with REAPER.
 void Register()
 {
-    // register action name and get command_id
+    // Register action name and get command_id.
     command_id = plugin_register("custom_action", &action);
 
-    // register action on/off state and callback function
+    // Register action toggle state callback.
     if (RUN_ON_TIMER)
         plugin_register("toggleaction", (void*)ToggleActionCallback);
 
-    // register run action/command
+    // Register action command handler.
     plugin_register("hookcommand2", (void*)OnAction);
 
-    // register the API function example
-    // function, definition string and function 'signature'
+    // Register the example API function and metadata.
     plugin_register("API_" STRINGIZE(API_ID)"_ReaScriptAPIFunctionExample", (void*)ReaScriptAPIFunctionExample);
     plugin_register(
         "APIdef_" STRINGIZE(API_ID)"_ReaScriptAPIFunctionExample", (void*)reascript_api_function_example_defstring
@@ -189,8 +174,7 @@ void Register()
     plugin_register("APIvararg_" STRINGIZE(API_ID)"_GetVersion", (void*)&InvokeReaScriptAPI<&GetVersion>);
 }
 
-// shutdown, time to exit
-// modern C++11 syntax
+// Unregister hooks before plugin unload.
 auto Unregister() -> void
 {
     plugin_register("-custom_action", &action);

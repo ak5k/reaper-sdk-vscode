@@ -1,6 +1,6 @@
 #define REAPERAPI_IMPLEMENT
 
-#include <WDL/wdltypes.h> // might be unnecessary in future
+#include <WDL/wdltypes.h>
 
 #include <reaper_plugin_functions.h>
 
@@ -14,13 +14,12 @@ extern "C"
         PROJECT_NAME::hInstance = hInstance;
         if (rec != nullptr && REAPERAPI_LoadAPI(rec->GetFunc) == 0)
         {
-            // check that our plugin hasn't been already loaded
+            // Reject duplicate load if the API function is already registered.
             if (rec->GetFunc("ReaScriptAPIFunctionExample"))
                 return 0;
             PROJECT_NAME::Register();
             return 1;
         }
-        // quit
         PROJECT_NAME::Unregister();
         return 0;
     }
