@@ -47,14 +47,16 @@ execute_process(
 )
 
 if(NOT TARGET reaper-sdk)
-    add_library(reaper-sdk IMPORTED INTERFACE)
+    add_library(reaper-sdk INTERFACE)
     target_include_directories(
         reaper-sdk
         SYSTEM
         INTERFACE "${_reaper_sdk_source_dir}/sdk"
     )
+    target_link_libraries(reaper-sdk INTERFACE WDL::WDL)
 endif()
-target_link_libraries(reaper-sdk INTERFACE WDL::WDL)
+
+target_link_libraries(${PROJECT_NAME}_lib PUBLIC reaper-sdk)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     if(WIN32)

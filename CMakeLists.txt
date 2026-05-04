@@ -33,8 +33,7 @@ list(FILTER SOURCES EXCLUDE REGEX "main\\.cpp$")
 target_sources(${PROJECT_NAME}_lib PRIVATE ${SOURCES})
 target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
-target_link_libraries(${PROJECT_NAME}_lib PRIVATE reaper-sdk)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_lib reaper-sdk)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_lib)
 
 if(MSVC)
     target_compile_options(
