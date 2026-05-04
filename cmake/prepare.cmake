@@ -43,10 +43,11 @@ foreach(_git_tag IN LISTS _git_tags)
         if(_remainder MATCHES "\\.[0-9]+$")
             string(REGEX MATCH "[0-9]+$" PROJECT_VERSION_TWEAK "${_remainder}")
         endif()
-        set(_version "${_version}.${PROJECT_VERSION_TWEAK}")
         break()
     endif()
 endforeach()
+
+set(_version "${_version}.${PROJECT_VERSION_TWEAK}")
 
 if(DEFINED ENV{GITHUB_RUN_NUMBER} AND NOT "$ENV{GITHUB_RUN_NUMBER}" STREQUAL "")
     set(PROJECT_VERSION_BUILD "$ENV{GITHUB_RUN_NUMBER}")
