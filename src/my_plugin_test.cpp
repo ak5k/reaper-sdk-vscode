@@ -13,7 +13,10 @@ void GetVersion(int* majorOut, int* minorOut, int* patchOut, int* tweakOut, char
 
 TEST(MyPluginTest, GetVersionReturnsCmakeVersion)
 {
-    int major{-1}, minor{-1}, patch{-1}, tweak{-1};
+    int major{-1};
+    int minor{-1};
+    int patch{-1};
+    int tweak{-1};
     char commit[64]{};
     char branch[64]{};
     GetVersion(&major, &minor, &patch, &tweak, commit, sizeof(commit), branch, sizeof(branch));
