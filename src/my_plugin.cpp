@@ -1,6 +1,7 @@
 #include "my_plugin.h"
-#include "reaper_vararg.hpp"
-#include <gsl/gsl>
+#include "reaper_vararg.h"
+#include <algorithm>
+#include <cstring>
 
 #define STRINGIZE_DEF(x) #x
 #define STRINGIZE(x) STRINGIZE_DEF(x)
@@ -15,8 +16,8 @@ namespace PROJECT_NAME
 // Global state required by REAPER callbacks.
 int command_id{0};
 bool toggle_action_state{false};
-constexpr auto command_name = "AK5K_" STRINGIZE(PROJECT_NAME) "_COMMAND";
-constexpr auto action_name = "ak5k: " STRINGIZE(PROJECT_NAME);
+constexpr auto command_name = STRINGIZE(PROJECT_VENDOR) "_" STRINGIZE(PROJECT_NAME) "_COMMAND";
+constexpr auto action_name = STRINGIZE(PROJECT_VENDOR) ": " STRINGIZE(PROJECT_NAME);
 custom_action_register_t action = {0, command_name, action_name, nullptr};
 
 // hInstance is declared in my_plugin.h and defined here.
@@ -98,31 +99,25 @@ auto reascript_api_function_example_defstring =
     "If boolean is true, copies input string to optional output string.\n";
 
 // example api function
-int ReaScriptAPIFunctionExample(
-    int whole_number,
-    bool boolean_value,
-    double decimal_number,
-    const char* string_of_text,
-    int string_of_text_sz,
-    const int* input_parameterInOptional,
-    double* return_valueOutOptional,
-    char* return_stringOutOptional,
-    int return_string_sz
-)
+int ReaScriptAPIFunctionExample(int whole_number, bool boolean_value, double decimal_number,
+                                const char* string_of_text, int string_of_text_sz,
+                                const int* input_parameterInOptional,
+                                double* return_valueOutOptional, char* return_stringOutOptional,
+                                int return_string_sz)
 {
     // if optional integer is provided
     if (input_parameterInOptional != nullptr)
     {
         // Assign computed value to the optional output pointer.
-        *return_valueOutOptional =
-            (*input_parameterInOptional + whole_number + decimal_number);
+        *return_valueOutOptional = (*input_parameterInOptional + whole_number + decimal_number);
     }
 
     // Conditionally produce optional output string.
     if (boolean_value)
     {
         // *_sz indicates C-string buffer size including the null terminator.
-        memcpy(return_stringOutOptional, string_of_text, min(return_string_sz, string_of_text_sz) * sizeof(char));
+        memcpy(return_stringOutOptional, string_of_text,
+               min(return_string_sz, string_of_text_sz) * sizeof(char));
     }
     return whole_number * whole_number;
 }
@@ -131,22 +126,26 @@ auto defstring_GetVersion =
     "void" // return type
     "\0"   // delimiter ('separator')
     // input parameter types
-    "int*,int*,int*,int*,char*,int"
+    "int*,int*,int*,int*,char*,int,char*,int"
     "\0"
     // input parameter names
-    "majorOut,minorOut,patchOut,tweakOut,commitOut,commitOut_sz"
+    "majorOut,minorOut,patchOut,tweakOut,commitOut,commitOut_sz,branchOut,branchOut_sz"
     "\0"
     "returns version numbers of my plugin\n";
 
-void GetVersion(int* majorOut, int* minorOut, int* patchOut, int* tweakOut, char* commitOut, int commitOut_sz)
+void GetVersion(int* majorOut, int* minorOut, int* patchOut, int* tweakOut, char* commitOut,
+                int commitOut_sz, char* branchOut, int branchOut_sz)
 {
     *majorOut = PROJECT_VERSION_MAJOR;
     *minorOut = PROJECT_VERSION_MINOR;
     *patchOut = PROJECT_VERSION_PATCH;
     *tweakOut = PROJECT_VERSION_TWEAK;
-    const char* commit = STRINGIZE(PROJECT_VERSION_COMMIT);
+    const char* commit = PROJECT_VERSION_COMMIT;
     std::copy(commit, commit + min(commitOut_sz - 1, (int)strlen(commit)), commitOut);
-    commitOut[min(commitOut_sz - 1, (int)strlen(commit))] = '\0'; // Ensure null termination
+    commitOut[min(commitOut_sz - 1, (int)strlen(commit))] = '\0';
+    const char* branch = PROJECT_VERSION_BRANCH;
+    std::copy(branch, branch + min(branchOut_sz - 1, (int)strlen(branch)), branchOut);
+    branchOut[min(branchOut_sz - 1, (int)strlen(branch))] = '\0';
 }
 
 // Register actions and exported API functions with REAPER.
@@ -163,15 +162,18 @@ void Register()
     plugin_register("hookcommand2", (void*)OnAction);
 
     // Register the example API function and metadata.
-    plugin_register("API_" STRINGIZE(API_ID)"_ReaScriptAPIFunctionExample", (void*)ReaScriptAPIFunctionExample);
+    plugin_register("API_" STRINGIZE(API_ID)"_ReaScriptAPIFunctionExample",
+                                     (void*)ReaScriptAPIFunctionExample);
+    plugin_register("APIdef_" STRINGIZE(API_ID)"_ReaScriptAPIFunctionExample",
+                                        (void*)reascript_api_function_example_defstring);
     plugin_register(
-        "APIdef_" STRINGIZE(API_ID)"_ReaScriptAPIFunctionExample", (void*)reascript_api_function_example_defstring
-    );
-    plugin_register("APIvararg_" STRINGIZE(API_ID)"_ReaScriptAPIFunctionExample", (void*)&InvokeReaScriptAPI<&ReaScriptAPIFunctionExample>);
+        "APIvararg_" STRINGIZE(API_ID)"_ReaScriptAPIFunctionExample",
+                               (void*)&InvokeReaScriptAPI<&ReaScriptAPIFunctionExample>);
 
     plugin_register("API_" STRINGIZE(API_ID)"_GetVersion", (void*)GetVersion);
     plugin_register("APIdef_" STRINGIZE(API_ID)"_GetVersion", (void*)defstring_GetVersion);
-    plugin_register("APIvararg_" STRINGIZE(API_ID)"_GetVersion", (void*)&InvokeReaScriptAPI<&GetVersion>);
+    plugin_register("APIvararg_" STRINGIZE(API_ID)"_GetVersion",
+                                           (void*)&InvokeReaScriptAPI<&GetVersion>);
 }
 
 // Unregister hooks before plugin unload.

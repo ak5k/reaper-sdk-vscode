@@ -16,25 +16,19 @@
 #   MACOS_NOTARIZATION_TEAM_ID, MACOS_NOTARIZATION_PASSWORD and run
 #   store-credentials as a setup step before building.
 
-set(_pkg_vendor "ak5k")
-set(_pkg_homepage "https://github.com/ak5k/reallm")
-set(_pkg_contact "https://github.com/ak5k/reallm/issues")
-set(_pkg_description_summary
-    "Cubase/Logic style low latency monitoring mode for REAPER"
-)
-set(_pkg_description_long
-    "Cubase/Logic style low latency monitoring mode for REAPER.\
- While enabled, restricts PDC latency to one block/buffer size by\
- bypassing plugins on input-monitored signal chains."
-)
-set(_pkg_deb_maintainer "ak5k <https://github.com/ak5k>")
+set(_pkg_vendor "${PROJECT_VENDOR}")
+set(_pkg_homepage "https://github.com/your-username/your-plugin")
+set(_pkg_contact "https://github.com/your-username/your-plugin/issues")
+set(_pkg_description_summary "A REAPER plug-in extension")
+set(_pkg_description_long "A REAPER plug-in extension.")
+set(_pkg_deb_maintainer "Your Name <https://github.com/your-username>")
 set(_pkg_deb_section "sound")
 # NSIS: parent directory under CPACK_NSIS_INSTALL_ROOT that holds the payload.
 set(_pkg_nsis_install_root "$APPDATA")
 set(_pkg_nsis_install_directory "REAPER")
 # productbuild: relative install prefix (under the user's home directory).
 set(_pkg_productbuild_install_prefix "Library/Application Support/REAPER")
-set(_pkg_productbuild_identifier "io.github.ak5k.reallm")
+set(_pkg_productbuild_identifier "io.github.your-username.your-plugin")
 # TODO/FIXME: Set a Start Menu shortcut target (REAPER exe, folder, URL, …).
 # When set, NSIS will create and delete the shortcut automatically.
 # Leave empty to add no shortcut.
