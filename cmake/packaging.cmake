@@ -15,6 +15,11 @@
 #   In CI, set repository secrets MACOS_NOTARIZATION_USERNAME,
 #   MACOS_NOTARIZATION_TEAM_ID, MACOS_NOTARIZATION_PASSWORD and run
 #   store-credentials as a setup step before building.
+#
+# Windows code signing:
+#   Handled in the release workflow via the Azure Trusted Signing GitHub Action.
+#   No local signing configuration is required.
+#
 
 set(_pkg_vendor "${PROJECT_VENDOR}")
 set(_pkg_homepage "https://github.com/your-username/your-plugin")
