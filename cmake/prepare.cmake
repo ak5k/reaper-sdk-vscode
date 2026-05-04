@@ -82,6 +82,25 @@ else()
     endif()
 endif()
 
+# ── Git remotes ──────────────────────────────────────────────────────────────
+
+execute_process(
+    COMMAND ${GIT_EXECUTABLE} remote get-url upstream
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE _upstream_url
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+    RESULT_VARIABLE _upstream_exists
+)
+if(_upstream_exists EQUAL 0 AND _upstream_url MATCHES "justinfrankel")
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} remote remove upstream
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_QUIET
+        ERROR_QUIET
+    )
+endif()
+
 # ── Git hooks ────────────────────────────────────────────────────────────────
 
 if(
