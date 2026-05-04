@@ -29,7 +29,7 @@ set(_pkg_description_long "A REAPER plug-in extension.")
 set(_pkg_deb_maintainer "Your Name <https://github.com/your-username>")
 set(_pkg_deb_section "sound")
 # NSIS: parent directory under CPACK_NSIS_INSTALL_ROOT that holds the payload.
-set(_pkg_nsis_install_root "$APPDATA")
+set(_pkg_nsis_install_root "$PROFILE\\\\AppData\\\\Roaming")
 set(_pkg_nsis_install_directory "REAPER")
 # productbuild: relative install prefix (under the user's home directory).
 set(_pkg_productbuild_install_prefix "Library/Application Support/REAPER")
@@ -83,8 +83,16 @@ else()
     set(CPACK_SYSTEM_NAME "linux-${_pkg_arch}")
 endif()
 
+set(_pkg_file_version "${PROJECT_VERSION_MAJOR}")
+if(DEFINED PROJECT_VERSION_MINOR AND NOT PROJECT_VERSION_MINOR STREQUAL "")
+    string(APPEND _pkg_file_version ".${PROJECT_VERSION_MINOR}")
+endif()
+if(DEFINED PROJECT_VERSION_PATCH AND NOT PROJECT_VERSION_PATCH STREQUAL "")
+    string(APPEND _pkg_file_version ".${PROJECT_VERSION_PATCH}")
+endif()
+
 set(CPACK_PACKAGE_FILE_NAME
-    "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}"
+    "${CPACK_PACKAGE_NAME}-${_pkg_file_version}-${CPACK_SYSTEM_NAME}"
 )
 
 set(CPACK_PACKAGE_DIRECTORY
@@ -102,10 +110,7 @@ endforeach()
 
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 set(CPACK_STRIP_FILES OFF)
-
-# Ensure generators that rely on component metadata (notably macOS
-# productbuild) include the default install component.
-set(CPACK_COMPONENTS_ALL "Unspecified")
+set(CPACK_MONOLITHIC_INSTALL ON)
 
 # Generator selection.
 if(WIN32)
