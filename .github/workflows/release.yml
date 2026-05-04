@@ -198,8 +198,6 @@ jobs:
     with:
       checkout_ref: ${{ needs.prepare-release.outputs.tag }}
       build_type: Release
-      windows_preset: windows-msvc-ninja-release
-      windows_artifact_dir: build/windows-msvc-ninja-release
       run_tests: true
       artifact_prefix: release
       cache_key_prefix: release-

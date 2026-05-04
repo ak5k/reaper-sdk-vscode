@@ -13,8 +13,6 @@ jobs:
     uses: ./.github/workflows/build-matrix.yml
     with:
       build_type: Debug
-      windows_preset: windows-msvc-ninja-debug
-      windows_artifact_dir: build/windows-msvc-ninja-debug
       run_tests: true
 
   clang-format-report:
