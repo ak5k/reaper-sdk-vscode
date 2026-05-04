@@ -19,18 +19,17 @@ include(cmake/reaper-plugin.cmake)
 include(cmake/tests.cmake)
 include(cmake/clang-tidy.cmake)
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp")
-list(FILTER SOURCES EXCLUDE REGEX "_test\\.cpp$")
-list(FILTER SOURCES EXCLUDE REGEX "main\\.cpp$")
-
 target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
-target_sources(${PROJECT_NAME}_lib PRIVATE ${SOURCES})
 target_include_directories(
     ${PROJECT_NAME}_lib
     SYSTEM
     PUBLIC ${CMAKE_BINARY_DIR}
 )
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp")
+list(FILTER SOURCES EXCLUDE REGEX "_test\\.cpp$")
+list(FILTER SOURCES EXCLUDE REGEX "main\\.cpp$")
+target_sources(${PROJECT_NAME}_lib PRIVATE ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_lib)
 
