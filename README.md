@@ -2,14 +2,31 @@
 
 A template for REAPER Plug-in Extension development using Visual Studio Code and CMake with presets. Developed and tested on Windows, macOS, and Linux.
 
+## Features
+
+- **CMake presets**: configure/build presets for Windows (MSVC, Ninja), macOS (Clang), and Linux (Clang/GCC)
+- **Dependency fetching**: WDL and reaper-sdk are fetched with `FetchContent` during configure
+- **Version and build metadata**: `prepare.cmake` reads version from git tags and records commit/branch in `config.h`
+- **Install step for REAPER**: build output is copied to REAPER `UserPlugins` after build
+- **Tests**: unit tests use GoogleTest with CTest
+- **Packaging**: CPack produces `.exe` (Windows), `.pkg` (macOS), and `.deb` (Linux)
+- **Signing/notarization**: macOS code signing and notarization support; Windows signing in CI
+- **CI workflows**: GitHub Actions build matrix, tests, and formatting checks (clang-format, gersemi)
+- **Release workflow**: `release.yml` creates version tags with semantic-release and uploads draft release artifacts
+- **Formatting**: `.clang-format` config and CI checks
+- **Static analysis**: `.clang-tidy` config with CMake integration
+- **Git hook**: `.githooks/pre-commit` runs formatting checks
+- **Dependency updates**: Dependabot updates GitHub Actions dependencies
+- **Reusable project template**: REAPER-specific logic is isolated and can be removed for non-REAPER targets; in toplevel `CMakeLists.txt` change project name, replace source files in `src/` with our own, remove `include(cmake/reaper-plugin.cmake)`, swap to `add_executable(${PROJECT_NAME})`, and start working on your own project!
+
 ## Requirements
 
 ### Windows
 
 Install [Visual Studio](https://visualstudio.microsoft.com/vs/features/cplusplus/) with at least these components:
 
-* C++ CMake tools for Windows
-* Windows 10/11 SDK
+- C++ CMake tools for Windows
+- Windows 10/11 SDK
 
 ### macOS
 
@@ -42,30 +59,30 @@ sudo apt install build-essential cmake gdb git ninja-build
    ```
 
 4. Open the workspace: `code .`
-5. CMake Tools will detect `CMakePresets.json` and prompt to select a configure preset — choose the one matching your platform and toolchain (e.g. **Windows MSVC x64 Debug**).
+5. CMake Tools will detect `CMakePresets.json` and prompt to select a configure preset - choose the one matching your platform and toolchain (e.g. **Windows MSVC x64 Debug**).
 6. Dependencies (WDL, reaper-sdk) are fetched automatically by CMake on first configure.
 
 ## Important files
 
 ### `CMakeLists.txt` and `cmake/*.cmake`
 
-* Project configuration
+- Project configuration
 
 ### `CMakePresets.json`
 
-* Configure and build presets for Windows (MSVC, Ninja), macOS (Clang), and Linux (Clang)
+- Configure and build presets for Windows (MSVC, Ninja), macOS (Clang), and Linux (Clang)
 
 ### `src/*.cpp` and `src/*.h`
 
-* Plugin source code
+- Plugin source code
 
 ## First steps
 
-* Build with `CMake: Build` or `F7`. The plugin is installed to your REAPER `UserPlugins` folder automatically after each build.
-* Start REAPER — the action (`MyUsername: MyPlugin`) should be available in the Action List (`?`).
-* Triggering the action should print `hello, world` to the REAPER console.
-* Switch between Debug and Release by changing the active configure preset (`CMake: Select Configure Preset` from the Command Palette or the Status Bar).
-* Debug with `F5`. On first launch, edit `launch.json` and set `"program"` to your REAPER executable path, e.g. `"C:/Program Files/REAPER (x64)/reaper.exe"`.
-* [VSCode C++ docs](https://code.visualstudio.com/docs/languages/cpp#_tutorials), [Microsoft C++ docs](https://docs.microsoft.com/en-us/cpp/cpp/), and the [REAPER Developer Forum](https://forum.cockos.com/forumdisplay.php?f=3) are useful resources.
+- Build with `CMake: Build` or `F7`. The plugin is installed to your REAPER `UserPlugins` folder automatically after each build.
+- Start REAPER - the action (`MyUsername: MyPlugin`) should be available in the Action List (`?`).
+- Triggering the action should print `hello, world` to the REAPER console.
+- Switch between Debug and Release by changing the active configure preset (`CMake: Select Configure Preset` from the Command Palette or the Status Bar).
+- Debug with `F5`. On first launch, edit `launch.json` and set `"program"` to your REAPER executable path, e.g. `"C:/Program Files/REAPER (x64)/reaper.exe"`.
+- [VSCode C++ docs](https://code.visualstudio.com/docs/languages/cpp#_tutorials), [Microsoft C++ docs](https://docs.microsoft.com/en-us/cpp/cpp/), and the [REAPER Developer Forum](https://forum.cockos.com/forumdisplay.php?f=3) are useful resources.
 
 

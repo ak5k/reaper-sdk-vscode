@@ -8,19 +8,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(${PROJECT_NAME}_lib STATIC)
 add_library(${PROJECT_NAME} SHARED)
+# add_executable(${PROJECT_NAME})
 
-# Configure config.h from config.h.in
-configure_file(
-    "${CMAKE_SOURCE_DIR}/src/config.h.in"
-    "${CMAKE_BINARY_DIR}/config.h"
-)
-target_include_directories(
-    ${PROJECT_NAME}_lib
-    SYSTEM
-    PUBLIC ${CMAKE_BINARY_DIR}
-)
+# core
+add_library(${PROJECT_NAME}_lib STATIC)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(cmake/reaper-plugin.cmake)
@@ -30,10 +22,25 @@ include(cmake/clang-tidy.cmake)
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp")
 list(FILTER SOURCES EXCLUDE REGEX "_test\\.cpp$")
 list(FILTER SOURCES EXCLUDE REGEX "main\\.cpp$")
-target_sources(${PROJECT_NAME}_lib PRIVATE ${SOURCES})
+
 target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
+target_sources(${PROJECT_NAME}_lib PRIVATE ${SOURCES})
+target_include_directories(
+    ${PROJECT_NAME}_lib
+    SYSTEM
+    PUBLIC ${CMAKE_BINARY_DIR}
+)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_lib)
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/src/config.h.in")
+    message(STATUS "Configuring config.h from config.h.in")
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/src/config.h.in"
+        "${CMAKE_BINARY_DIR}/config.h"
+    )
+endif()
 
 if(MSVC)
     target_compile_options(
