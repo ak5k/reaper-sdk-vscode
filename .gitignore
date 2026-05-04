@@ -1,8 +1,4 @@
-.vscode/*
-!.vscode/launch.json
 **/.DS_Store
-/*build*
-/WDL
-/.idea
-/.vs
-/third_party
+/build*
+/node_modules/
+package-lock.json
