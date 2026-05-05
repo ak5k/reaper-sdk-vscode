@@ -192,6 +192,12 @@ jobs:
           fi
           perf --version
 
+      - name: Allow perf profiling (relax perf_event_paranoid)
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo sysctl -w kernel.perf_event_paranoid=1
+
       - name: Cache CMake deps
         uses: actions/cache@v4
         with:

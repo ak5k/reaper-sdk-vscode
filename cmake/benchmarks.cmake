@@ -94,6 +94,7 @@ if(NOT DEFINED ENV{CI} OR ENABLE_BENCHMARK_TESTS)
             record
             --call-graph=dwarf
             --no-buildid
+            --no-buildid-mmap
             --output=${_benchmark_output_dir}/perf-${_benchmark_timestamp}.data
             --
             $<TARGET_FILE:${PROJECT_NAME}_benchmarks>
