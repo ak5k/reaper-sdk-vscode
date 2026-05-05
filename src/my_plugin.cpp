@@ -31,11 +31,7 @@ REAPER_PLUGIN_HINSTANCE hInstance{nullptr}; // used for dialogs, if any
 
 // Build-time switch: run business logic on every REAPER timer tick (true),
 // or execute once per action trigger (false).
-<<<<<<< benchmark
 static bool run_on_timer = true;
-=======
-constexpr bool RUN_ON_TIMER = true;
->>>>>>> main
 
 // Called on every timer tick when the action is active, or once per trigger.
 void MainFunctionOfMyPlugin()

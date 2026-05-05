@@ -28,18 +28,9 @@ set(PROJECT_GCC_CLANG_WARNING_FLAGS
 set(PROJECT_X86_SIMD_FLAGS)
 string(TOLOWER "${CMAKE_CXX_COMPILER_TARGET}" _compiler_target_lower)
 string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _processor_lower)
-<<<<<<< benchmark
 if(
     NOT _compiler_target_lower MATCHES "^(arm.*|aarch64)"
     AND NOT _processor_lower MATCHES "^(arm.*|aarch64)$"
-=======
-string(TOLOWER "${CMAKE_CXX_COMPILER_TARGET}" _compiler_target_lower)
-if(
-    NOT (
-        _processor_lower MATCHES "^(arm.*|aarch64.*)$"
-        OR _compiler_target_lower MATCHES "^(arm.*|aarch64.*)$"
-    )
->>>>>>> main
 )
     if(MSVC)
         set(PROJECT_X86_SIMD_FLAGS /arch:AVX2)
