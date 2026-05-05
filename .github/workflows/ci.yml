@@ -108,7 +108,7 @@ jobs:
             tooling-linux-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', '.clang-tidy', '.clang-format') }}
 
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0
+        uses: mozilla-actions/sccache-action@v0.0.10
 
       - name: Configure
         shell: bash
@@ -203,7 +203,7 @@ jobs:
           fi
 
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0
+        uses: mozilla-actions/sccache-action@v0.0.10
 
       - name: Configure
         if: ${{ !matrix.requires_rtsan_probe || steps.rtsan-probe.outputs.supported == 'true' }}

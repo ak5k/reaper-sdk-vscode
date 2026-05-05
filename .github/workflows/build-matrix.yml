@@ -226,7 +226,7 @@ jobs:
           esac
 
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0
+        uses: mozilla-actions/sccache-action@v0.0.10
 
       - name: Configure
         shell: bash
@@ -346,7 +346,7 @@ jobs:
           fi
 
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0
+        uses: mozilla-actions/sccache-action@v0.0.10
 
       - name: Configure
         shell: bash
@@ -522,7 +522,7 @@ jobs:
           'CXXFLAGS=-arm64EC' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0
+        uses: mozilla-actions/sccache-action@v0.0.10
 
       - name: Configure
         shell: pwsh
