@@ -38,25 +38,24 @@ if(
         set(PROJECT_X86_SIMD_FLAGS -mavx2 -mfma)
     endif()
 endif()
-unset(_compiler_target_lower)
-# -------------------------------------------
 
 if(MSVC)
     foreach(
-        _var
-        CMAKE_C_FLAGS_RELEASE
+        _flags_var
         CMAKE_CXX_FLAGS_RELEASE
-        CMAKE_C_FLAGS_RELWITHDEBINFO
         CMAKE_CXX_FLAGS_RELWITHDEBINFO
-        CMAKE_C_FLAGS_MINSIZEREL
         CMAKE_CXX_FLAGS_MINSIZEREL
     )
-        string(REPLACE "/Ob2" "/Ob3" ${_var} "${${_var}}")
+        if(${_flags_var} MATCHES "/Ob2")
+            string(REPLACE "/Ob2" "/Ob3" ${_flags_var} "${${_flags_var}}")
+            set(${_flags_var} "${${_flags_var}}" CACHE STRING "" FORCE)
+        endif()
     endforeach()
+
     set(_compile_flags
-        ${PROJECT_MSVC_WARNING_FLAGS} ##
+        ${PROJECT_MSVC_WARNING_FLAGS}
         $<$<NOT:$<CONFIG:Debug>>:/Oi
-        /Ot
+        /GF
         /fp:fast
         ${PROJECT_X86_SIMD_FLAGS}>
     )
@@ -64,14 +63,36 @@ else()
     set(_compile_flags
         ${PROJECT_GCC_CLANG_WARNING_FLAGS}
         $<$<NOT:$<CONFIG:Debug>>:-O3
-        -fomit-frame-pointer
         -ffast-math
-        -fno-math-errno
-        -fno-trapping-math
         -ffunction-sections
         -fdata-sections
         ${PROJECT_X86_SIMD_FLAGS}>
     )
 endif()
 
-target_compile_options(${PROJECT_NAME}_lib PUBLIC ${_compile_flags})
+if(MSVC)
+    set(_link_flags $<$<NOT:$<CONFIG:Debug>>:/OPT:REF /OPT:ICF>)
+elseif(APPLE)
+    set(_link_flags $<$<NOT:$<CONFIG:Debug>>:-Wl,-dead_strip>)
+else()
+    set(_link_flags $<$<NOT:$<CONFIG:Debug>>:-Wl,--gc-sections>)
+endif()
+
+foreach(_target ${PROJECT_NAME} ${PROJECT_NAME}_lib)
+    set_property(
+        TARGET ${_target}
+        PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+    )
+    set_property(
+        TARGET ${_target}
+        PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE
+    )
+    set_property(
+        TARGET ${_target}
+        PROPERTY INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL TRUE
+    )
+endforeach()
+
+target_link_options(${PROJECT_NAME} PRIVATE ${_link_flags})
+target_compile_options(${PROJECT_NAME}_lib PRIVATE ${_compile_flags})
+target_compile_options(${PROJECT_NAME} PRIVATE ${_compile_flags})
