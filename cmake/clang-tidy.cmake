@@ -36,7 +36,10 @@ function(_resolve_clang_tidy out_var)
             find_program(
                 _clang_tidy_executable
                 NAMES clang-tidy
-                HINTS /opt/homebrew/opt/llvm/bin /usr/local/opt/llvm/bin
+                HINTS
+                    /opt/homebrew/opt/llvm/bin
+                    /usr/local/opt/llvm/bin
+                    "C:/Program Files/LLVM/bin"
             )
         endif()
     endif()

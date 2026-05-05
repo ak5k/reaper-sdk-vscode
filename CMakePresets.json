@@ -17,7 +17,6 @@
         {
             "name": "windows-msvc",
             "displayName": "Windows MSVC x64",
-            "hidden": true,
             "inherits": "base",
             "binaryDir": "${sourceDir}/build/windows-msvc-vs",
             "condition": {
@@ -27,16 +26,18 @@
             }
         },
         {
-            "name": "windows-msvc-debug",
-            "displayName": "Windows MSVC x64 Debug",
-            "inherits": "windows-msvc",
-            "binaryDir": "${sourceDir}/build/windows-msvc-debug"
-        },
-        {
-            "name": "windows-msvc-release",
-            "displayName": "Windows MSVC x64 Release",
-            "inherits": "windows-msvc",
-            "binaryDir": "${sourceDir}/build/windows-msvc-release"
+            "name": "windows-clangcl",
+            "displayName": "Windows ClangCL x64",
+            "inherits": "base",
+            "binaryDir": "${sourceDir}/build/windows-clangcl-vs",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "cacheVariables": {
+                "CMAKE_GENERATOR_TOOLSET": "ClangCL"
+            }
         },
         {
             "name": "windows-msvc-ninja",
@@ -70,8 +71,147 @@
             }
         },
         {
+            "name": "windows-msvc-ninja-relwithdebinfo",
+            "displayName": "Windows MSVC Ninja x64 RelWithDebInfo",
+            "inherits": "windows-msvc-ninja",
+            "binaryDir": "${sourceDir}/build/windows-msvc-ninja-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "windows-clang-ninja",
+            "displayName": "Windows LLVM Clang Ninja x64",
+            "hidden": true,
+            "inherits": "base",
+            "generator": "Ninja",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        },
+        {
+            "name": "windows-clang-ninja-debug",
+            "displayName": "Windows LLVM Clang Ninja x64 Debug",
+            "inherits": "windows-clang-ninja",
+            "binaryDir": "${sourceDir}/build/windows-clang-ninja-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "windows-clang-ninja-release",
+            "displayName": "Windows LLVM Clang Ninja x64 Release",
+            "inherits": "windows-clang-ninja",
+            "binaryDir": "${sourceDir}/build/windows-clang-ninja-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "windows-clang-ninja-relwithdebinfo",
+            "displayName": "Windows LLVM Clang Ninja x64 RelWithDebInfo",
+            "inherits": "windows-clang-ninja",
+            "binaryDir": "${sourceDir}/build/windows-clang-ninja-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "linux-gcc-ninja",
+            "displayName": "Linux GCC Ninja",
+            "hidden": true,
+            "inherits": "base",
+            "generator": "Ninja",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++"
+            }
+        },
+        {
+            "name": "linux-gcc-ninja-debug",
+            "displayName": "Linux GCC Ninja Debug",
+            "inherits": "linux-gcc-ninja",
+            "binaryDir": "${sourceDir}/build/linux-gcc-ninja-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "linux-gcc-ninja-release",
+            "displayName": "Linux GCC Ninja Release",
+            "inherits": "linux-gcc-ninja",
+            "binaryDir": "${sourceDir}/build/linux-gcc-ninja-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "linux-gcc-ninja-relwithdebinfo",
+            "displayName": "Linux GCC Ninja RelWithDebInfo",
+            "inherits": "linux-gcc-ninja",
+            "binaryDir": "${sourceDir}/build/linux-gcc-ninja-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "linux-gcc-makefiles",
+            "displayName": "Linux GCC Unix Makefiles",
+            "hidden": true,
+            "inherits": "base",
+            "generator": "Unix Makefiles",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++"
+            }
+        },
+        {
+            "name": "linux-gcc-makefiles-debug",
+            "displayName": "Linux GCC Unix Makefiles Debug",
+            "inherits": "linux-gcc-makefiles",
+            "binaryDir": "${sourceDir}/build/linux-gcc-makefiles-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "linux-gcc-makefiles-release",
+            "displayName": "Linux GCC Unix Makefiles Release",
+            "inherits": "linux-gcc-makefiles",
+            "binaryDir": "${sourceDir}/build/linux-gcc-makefiles-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "linux-gcc-makefiles-relwithdebinfo",
+            "displayName": "Linux GCC Unix Makefiles RelWithDebInfo",
+            "inherits": "linux-gcc-makefiles",
+            "binaryDir": "${sourceDir}/build/linux-gcc-makefiles-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
             "name": "linux-clang",
-            "displayName": "Linux LLVM Clang",
+            "displayName": "Linux LLVM Clang Ninja",
+            "hidden": true,
             "inherits": "base",
             "generator": "Ninja",
             "condition": {
@@ -86,7 +226,7 @@
         },
         {
             "name": "linux-clang-debug",
-            "displayName": "Linux LLVM Clang Debug",
+            "displayName": "Linux LLVM Clang Ninja Debug",
             "inherits": "linux-clang",
             "binaryDir": "${sourceDir}/build/linux-clang-debug",
             "cacheVariables": {
@@ -95,7 +235,7 @@
         },
         {
             "name": "linux-clang-release",
-            "displayName": "Linux LLVM Clang Release",
+            "displayName": "Linux LLVM Clang Ninja Release",
             "inherits": "linux-clang",
             "binaryDir": "${sourceDir}/build/linux-clang-release",
             "cacheVariables": {
@@ -103,8 +243,61 @@
             }
         },
         {
-            "name": "macos-clang",
-            "displayName": "macOS Clang",
+            "name": "linux-clang-relwithdebinfo",
+            "displayName": "Linux LLVM Clang Ninja RelWithDebInfo",
+            "inherits": "linux-clang",
+            "binaryDir": "${sourceDir}/build/linux-clang-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "linux-clang-makefiles",
+            "displayName": "Linux LLVM Clang Unix Makefiles",
+            "hidden": true,
+            "inherits": "base",
+            "generator": "Unix Makefiles",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        },
+        {
+            "name": "linux-clang-makefiles-debug",
+            "displayName": "Linux LLVM Clang Unix Makefiles Debug",
+            "inherits": "linux-clang-makefiles",
+            "binaryDir": "${sourceDir}/build/linux-clang-makefiles-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "linux-clang-makefiles-release",
+            "displayName": "Linux LLVM Clang Unix Makefiles Release",
+            "inherits": "linux-clang-makefiles",
+            "binaryDir": "${sourceDir}/build/linux-clang-makefiles-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "linux-clang-makefiles-relwithdebinfo",
+            "displayName": "Linux LLVM Clang Unix Makefiles RelWithDebInfo",
+            "inherits": "linux-clang-makefiles",
+            "binaryDir": "${sourceDir}/build/linux-clang-makefiles-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "macos-appleclang-ninja",
+            "displayName": "macOS AppleClang Ninja",
+            "hidden": true,
             "inherits": "base",
             "generator": "Ninja",
             "condition": {
@@ -118,34 +311,75 @@
             }
         },
         {
-            "name": "macos-clang-debug",
-            "displayName": "macOS Clang Debug",
-            "inherits": "macos-clang",
-            "binaryDir": "${sourceDir}/build/macos-clang-debug",
+            "name": "macos-appleclang-ninja-debug",
+            "displayName": "macOS AppleClang Ninja Debug",
+            "inherits": "macos-appleclang-ninja",
+            "binaryDir": "${sourceDir}/build/macos-appleclang-ninja-debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
-            "name": "macos-clang-release",
-            "displayName": "macOS Clang Release",
-            "inherits": "macos-clang",
-            "binaryDir": "${sourceDir}/build/macos-clang-release",
+            "name": "macos-appleclang-ninja-release",
+            "displayName": "macOS AppleClang Ninja Release",
+            "inherits": "macos-appleclang-ninja",
+            "binaryDir": "${sourceDir}/build/macos-appleclang-ninja-release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "macos-appleclang-ninja-relwithdebinfo",
+            "displayName": "macOS AppleClang Ninja RelWithDebInfo",
+            "inherits": "macos-appleclang-ninja",
+            "binaryDir": "${sourceDir}/build/macos-appleclang-ninja-relwithdebinfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "macos-appleclang-xcode",
+            "displayName": "macOS AppleClang Xcode",
+            "inherits": "base",
+            "generator": "Xcode",
+            "binaryDir": "${sourceDir}/build/macos-appleclang-xcode",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
             }
         }
     ],
     "buildPresets": [
         {
             "name": "windows-msvc-debug",
-            "configurePreset": "windows-msvc-debug",
+            "configurePreset": "windows-msvc",
             "configuration": "Debug"
         },
         {
             "name": "windows-msvc-release",
-            "configurePreset": "windows-msvc-release",
+            "configurePreset": "windows-msvc",
             "configuration": "Release"
+        },
+        {
+            "name": "windows-msvc-relwithdebinfo",
+            "configurePreset": "windows-msvc",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "windows-clangcl-debug",
+            "configurePreset": "windows-clangcl",
+            "configuration": "Debug"
+        },
+        {
+            "name": "windows-clangcl-release",
+            "configurePreset": "windows-clangcl",
+            "configuration": "Release"
+        },
+        {
+            "name": "windows-clangcl-relwithdebinfo",
+            "configurePreset": "windows-clangcl",
+            "configuration": "RelWithDebInfo"
         },
         {
             "name": "windows-msvc-ninja-debug",
@@ -156,6 +390,46 @@
             "configurePreset": "windows-msvc-ninja-release"
         },
         {
+            "name": "windows-msvc-ninja-relwithdebinfo",
+            "configurePreset": "windows-msvc-ninja-relwithdebinfo"
+        },
+        {
+            "name": "windows-clang-ninja-debug",
+            "configurePreset": "windows-clang-ninja-debug"
+        },
+        {
+            "name": "windows-clang-ninja-release",
+            "configurePreset": "windows-clang-ninja-release"
+        },
+        {
+            "name": "windows-clang-ninja-relwithdebinfo",
+            "configurePreset": "windows-clang-ninja-relwithdebinfo"
+        },
+        {
+            "name": "linux-gcc-ninja-debug",
+            "configurePreset": "linux-gcc-ninja-debug"
+        },
+        {
+            "name": "linux-gcc-ninja-release",
+            "configurePreset": "linux-gcc-ninja-release"
+        },
+        {
+            "name": "linux-gcc-ninja-relwithdebinfo",
+            "configurePreset": "linux-gcc-ninja-relwithdebinfo"
+        },
+        {
+            "name": "linux-gcc-makefiles-debug",
+            "configurePreset": "linux-gcc-makefiles-debug"
+        },
+        {
+            "name": "linux-gcc-makefiles-release",
+            "configurePreset": "linux-gcc-makefiles-release"
+        },
+        {
+            "name": "linux-gcc-makefiles-relwithdebinfo",
+            "configurePreset": "linux-gcc-makefiles-relwithdebinfo"
+        },
+        {
             "name": "linux-clang-debug",
             "configurePreset": "linux-clang-debug"
         },
@@ -164,18 +438,53 @@
             "configurePreset": "linux-clang-release"
         },
         {
-            "name": "macos-clang-debug",
-            "configurePreset": "macos-clang-debug"
+            "name": "linux-clang-relwithdebinfo",
+            "configurePreset": "linux-clang-relwithdebinfo"
         },
         {
-            "name": "macos-clang-release",
-            "configurePreset": "macos-clang-release"
+            "name": "linux-clang-makefiles-debug",
+            "configurePreset": "linux-clang-makefiles-debug"
+        },
+        {
+            "name": "linux-clang-makefiles-release",
+            "configurePreset": "linux-clang-makefiles-release"
+        },
+        {
+            "name": "linux-clang-makefiles-relwithdebinfo",
+            "configurePreset": "linux-clang-makefiles-relwithdebinfo"
+        },
+        {
+            "name": "macos-appleclang-ninja-debug",
+            "configurePreset": "macos-appleclang-ninja-debug"
+        },
+        {
+            "name": "macos-appleclang-ninja-release",
+            "configurePreset": "macos-appleclang-ninja-release"
+        },
+        {
+            "name": "macos-appleclang-ninja-relwithdebinfo",
+            "configurePreset": "macos-appleclang-ninja-relwithdebinfo"
+        },
+        {
+            "name": "macos-appleclang-xcode-debug",
+            "configurePreset": "macos-appleclang-xcode",
+            "configuration": "Debug"
+        },
+        {
+            "name": "macos-appleclang-xcode-release",
+            "configurePreset": "macos-appleclang-xcode",
+            "configuration": "Release"
+        },
+        {
+            "name": "macos-appleclang-xcode-relwithdebinfo",
+            "configurePreset": "macos-appleclang-xcode",
+            "configuration": "RelWithDebInfo"
         }
     ],
     "testPresets": [
         {
             "name": "windows-msvc-debug",
-            "configurePreset": "windows-msvc-debug",
+            "configurePreset": "windows-msvc",
             "configuration": "Debug"
         },
         {
@@ -183,12 +492,76 @@
             "configurePreset": "windows-msvc-ninja-debug"
         },
         {
+            "name": "windows-msvc-ninja-relwithdebinfo",
+            "configurePreset": "windows-msvc-ninja-relwithdebinfo"
+        },
+        {
+            "name": "windows-clang-ninja-debug",
+            "configurePreset": "windows-clang-ninja-debug"
+        },
+        {
+            "name": "windows-clang-ninja-relwithdebinfo",
+            "configurePreset": "windows-clang-ninja-relwithdebinfo"
+        },
+        {
+            "name": "windows-clangcl-debug",
+            "configurePreset": "windows-clangcl",
+            "configuration": "Debug"
+        },
+        {
+            "name": "windows-clangcl-relwithdebinfo",
+            "configurePreset": "windows-clangcl",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "linux-gcc-ninja-debug",
+            "configurePreset": "linux-gcc-ninja-debug"
+        },
+        {
+            "name": "linux-gcc-ninja-relwithdebinfo",
+            "configurePreset": "linux-gcc-ninja-relwithdebinfo"
+        },
+        {
+            "name": "linux-gcc-makefiles-debug",
+            "configurePreset": "linux-gcc-makefiles-debug"
+        },
+        {
+            "name": "linux-gcc-makefiles-relwithdebinfo",
+            "configurePreset": "linux-gcc-makefiles-relwithdebinfo"
+        },
+        {
             "name": "linux-clang-debug",
             "configurePreset": "linux-clang-debug"
         },
         {
-            "name": "macos-clang-debug",
-            "configurePreset": "macos-clang-debug"
+            "name": "linux-clang-relwithdebinfo",
+            "configurePreset": "linux-clang-relwithdebinfo"
+        },
+        {
+            "name": "linux-clang-makefiles-debug",
+            "configurePreset": "linux-clang-makefiles-debug"
+        },
+        {
+            "name": "linux-clang-makefiles-relwithdebinfo",
+            "configurePreset": "linux-clang-makefiles-relwithdebinfo"
+        },
+        {
+            "name": "macos-appleclang-ninja-debug",
+            "configurePreset": "macos-appleclang-ninja-debug"
+        },
+        {
+            "name": "macos-appleclang-ninja-relwithdebinfo",
+            "configurePreset": "macos-appleclang-ninja-relwithdebinfo"
+        },
+        {
+            "name": "macos-appleclang-xcode-debug",
+            "configurePreset": "macos-appleclang-xcode",
+            "configuration": "Debug"
+        },
+        {
+            "name": "macos-appleclang-xcode-relwithdebinfo",
+            "configurePreset": "macos-appleclang-xcode",
+            "configuration": "RelWithDebInfo"
         }
     ]
 }
