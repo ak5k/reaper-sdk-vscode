@@ -79,17 +79,12 @@ else()
 endif()
 
 foreach(_target ${PROJECT_NAME} ${PROJECT_NAME}_lib)
-    set_property(
-        TARGET ${_target}
-        PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
-    )
-    set_property(
-        TARGET ${_target}
-        PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE
-    )
-    set_property(
-        TARGET ${_target}
-        PROPERTY INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL TRUE
+    set_target_properties(
+        ${_target}
+        PROPERTIES
+            INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+            INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE
+            INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL TRUE
     )
 endforeach()
 
