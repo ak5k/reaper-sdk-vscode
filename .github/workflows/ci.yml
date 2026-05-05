@@ -30,8 +30,12 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          brew install clang-format gersemi
-          echo "$(brew --prefix clang-format)/bin" >> "$GITHUB_PATH"
+          if ! command -v clang-format &> /dev/null; then
+            brew install clang-format
+          fi
+          if ! command -v gersemi &> /dev/null; then
+            brew install gersemi
+          fi
           clang-format --version
           gersemi --version
 
@@ -80,7 +84,6 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          # Only install CMake if not available or version < 4.0
           need_cmake=true
           if command -v cmake &> /dev/null; then
             cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
@@ -91,13 +94,17 @@ jobs:
           if [[ "$need_cmake" == "true" ]]; then
             brew install cmake
           fi
-          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
           cmake --version
 
       - name: Install tooling dependencies
         run: |
+          set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y ninja-build clang clang-tidy
+          packages=(ninja-build clang)
+          if ! command -v clang-tidy &> /dev/null; then
+            packages+=(clang-tidy)
+          fi
+          sudo apt-get install -y "${packages[@]}"
 
       - name: Cache CMake deps
         uses: actions/cache@v4
@@ -169,7 +176,6 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          # Only install CMake if not available or version < 4.0
           need_cmake=true
           if command -v cmake &> /dev/null; then
             cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
@@ -180,9 +186,10 @@ jobs:
           if [[ "$need_cmake" == "true" ]]; then
             brew install cmake
           fi
-          brew install llvm
-          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
-          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          if ! command -v clang-tidy &> /dev/null; then
+            brew install llvm
+            echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          fi
           cmake --version
           clang --version
 

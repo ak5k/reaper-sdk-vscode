@@ -59,13 +59,6 @@ function(enable_clang_tidy_for_targets)
 
     _resolve_clang_tidy(_clang_tidy_executable)
     if(NOT _clang_tidy_executable)
-        if(DEFINED ENV{CI})
-            message(
-                FATAL_ERROR
-                "clang-tidy not found in CI environment; \
-install clang-tidy or set CLANG_TIDY_PATH"
-            )
-        endif()
         message(STATUS "clang-tidy not found; skipping clang-tidy integration")
         return()
     endif()

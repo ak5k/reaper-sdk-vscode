@@ -108,7 +108,6 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          # Only install CMake if not available or version < 4.0
           need_cmake=true
           if command -v cmake &> /dev/null; then
             cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
@@ -119,7 +118,6 @@ jobs:
           if [[ "$need_cmake" == "true" ]]; then
             brew install cmake
           fi
-          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
           cmake --version
 
       - name: Cache CMake deps
@@ -179,7 +177,10 @@ jobs:
 
           install_deps() {
             local target_arch="$1"; shift
-            local native=("$@" php-cli qemu-user-binfmt clang-tidy)
+            local native=("$@" php-cli qemu-user-binfmt)
+            if ! command -v clang-tidy &> /dev/null; then
+              native+=(clang-tidy)
+            fi
             local target=(
               libboost-dev libcurl4-openssl-dev libsqlite3-dev libssl-dev
               libxml2-dev zlib1g-dev
@@ -314,7 +315,6 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          # Only install CMake if not available or version < 4.0
           need_cmake=true
           if command -v cmake &> /dev/null; then
             cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
@@ -325,10 +325,11 @@ jobs:
           if [[ "$need_cmake" == "true" ]]; then
             brew install cmake
           fi
-          brew install llvm
-          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
-          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
-          echo "CLANG_TIDY_PATH=$(brew --prefix llvm)/bin/clang-tidy" >> "$GITHUB_ENV"
+          if ! command -v clang-tidy &> /dev/null; then
+            brew install llvm
+            echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          fi
+          echo "CLANG_TIDY_PATH=$(command -v clang-tidy)" >> "$GITHUB_ENV"
           cmake --version
 
       - name: Cache CMake deps
