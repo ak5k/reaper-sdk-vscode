@@ -84,5 +84,6 @@ sudo apt install build-essential cmake gdb git ninja-build
 - Switch between Debug and Release by changing the active configure preset (`CMake: Select Configure Preset` from the Command Palette or the Status Bar).
 - Debug with `F5`. On first launch, edit `launch.json` and set `"program"` to your REAPER executable path, e.g. `"C:/Program Files/REAPER (x64)/reaper.exe"`.
 - [VSCode C++ docs](https://code.visualstudio.com/docs/languages/cpp#_tutorials), [Microsoft C++ docs](https://docs.microsoft.com/en-us/cpp/cpp/), and the [REAPER Developer Forum](https://forum.cockos.com/forumdisplay.php?f=3) are useful resources.
+![image](https://i.imgur.com/N4LuyFV.gif)
 
 
