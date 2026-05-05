@@ -25,13 +25,17 @@ jobs:
       - name: Setup Homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Install clang-format and gersemi (Linuxbrew)
+      - name: Install latest clang-format and gersemi (Linuxbrew)
         shell: bash
         run: |
           set -euo pipefail
           brew update
           brew install clang-format gersemi
+          brew upgrade clang-format gersemi
+
           echo "$(brew --prefix clang-format)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix)/bin" >> "$GITHUB_PATH"
+
           clang-format --version
           gersemi --version
 
@@ -80,24 +84,18 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          # Only install CMake if not available or version < 4.0
-          need_cmake=true
-          if command -v cmake &> /dev/null; then
-            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
-            if [[ "${cmake_major}" -ge 4 ]]; then
-              need_cmake=false
-            fi
-          fi
-          if [[ "$need_cmake" == "true" ]]; then
-            brew install cmake
-          fi
-          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
+          brew install cmake
           cmake --version
 
       - name: Install tooling dependencies
         run: |
+          set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y ninja-build clang clang-tidy
+          packages=(ninja-build clang)
+          if ! command -v clang-tidy &> /dev/null; then
+            packages+=(clang-tidy)
+          fi
+          sudo apt-get install -y "${packages[@]}"
 
       - name: Cache CMake deps
         uses: actions/cache@v4
@@ -107,6 +105,9 @@ jobs:
           key: >-
             tooling-linux-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', '.clang-tidy', '.clang-format') }}
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
       - name: Configure
         shell: bash
         run: |
@@ -114,7 +115,9 @@ jobs:
           cmake -B build/tooling -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_C_COMPILER=clang \
-            -DCMAKE_CXX_COMPILER=clang++
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
 
       - name: Build
         run: cmake --build build/tooling
@@ -164,20 +167,12 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          # Only install CMake if not available or version < 4.0
-          need_cmake=true
-          if command -v cmake &> /dev/null; then
-            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
-            if [[ "${cmake_major}" -ge 4 ]]; then
-              need_cmake=false
-            fi
-          fi
-          if [[ "$need_cmake" == "true" ]]; then
-            brew install cmake
-          fi
+
+          brew install cmake
+
           brew install llvm
-          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
           echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+
           cmake --version
           clang --version
 
@@ -197,6 +192,9 @@ jobs:
             echo "supported=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
       - name: Configure
         if: ${{ !matrix.requires_rtsan_probe || steps.rtsan-probe.outputs.supported == 'true' }}
         shell: bash
@@ -206,6 +204,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
             -DCMAKE_C_FLAGS="${{ matrix.c_flags }}" \
             -DCMAKE_CXX_FLAGS="${{ matrix.cxx_flags }}" \
             -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.exe_linker_flags }}" \

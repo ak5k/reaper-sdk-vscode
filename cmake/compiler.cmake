@@ -28,15 +28,20 @@ set(PROJECT_GCC_CLANG_WARNING_FLAGS
 
 set(PROJECT_X86_SIMD_FLAGS)
 string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _processor_lower)
-if(NOT MSVC AND _processor_lower MATCHES "^(arm|armv[0-9]+|arm64|aarch64)$")
-    set(PROJECT_X86_SIMD_FLAGS)
-else()
+string(TOLOWER "${CMAKE_CXX_COMPILER_TARGET}" _compiler_target_lower)
+if(
+    NOT (
+        _processor_lower MATCHES "^(arm.*|aarch64.*)$"
+        OR _compiler_target_lower MATCHES "^(arm.*|aarch64.*)$"
+    )
+)
     if(MSVC)
         set(PROJECT_X86_SIMD_FLAGS /arch:AVX2)
     else()
         set(PROJECT_X86_SIMD_FLAGS -mavx2 -mfma)
     endif()
 endif()
+unset(_compiler_target_lower)
 # -------------------------------------------
 
 if(MSVC)
