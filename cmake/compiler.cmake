@@ -8,6 +8,7 @@ if(NOT TARGET ${PROJECT_NAME}_lib OR NOT TARGET ${PROJECT_NAME})
 endif()
 
 target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
+
 # --- Warning flags (edit these to taste) ---
 set(PROJECT_MSVC_WARNING_FLAGS
     /W3
@@ -27,11 +28,20 @@ set(PROJECT_GCC_CLANG_WARNING_FLAGS
 # -------------------------------------------
 
 if(MSVC)
+    foreach(
+        _var
+        CMAKE_C_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_C_FLAGS_RELWITHDEBINFO
+        CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        CMAKE_C_FLAGS_MINSIZEREL
+        CMAKE_CXX_FLAGS_MINSIZEREL
+    )
+        string(REPLACE "/Ob2" "/Ob3" ${_var} "${${_var}}")
+    endforeach()
     set(_compile_flags
-        ${PROJECT_MSVC_WARNING_FLAGS}
-        $<$<NOT:$<CONFIG:Debug>>:/O2
-        /Ob3
-        /Oi
+        ${PROJECT_MSVC_WARNING_FLAGS} ##
+        $<$<NOT:$<CONFIG:Debug>>:/Oi
         /Ot
         /fp:fast
         /arch:AVX2>

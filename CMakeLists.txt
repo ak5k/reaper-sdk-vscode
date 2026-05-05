@@ -11,12 +11,14 @@ add_library(${PROJECT_NAME} SHARED)
 add_library(${PROJECT_NAME}_lib STATIC)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 include(cmake/reaper-plugin.cmake)
-include(cmake/tests.cmake)
-include(cmake/clang-tidy.cmake)
+
 include(cmake/compiler.cmake)
-include(cmake/code-signing.cmake)
+include(cmake/clang-tidy.cmake)
 include(cmake/packaging.cmake)
+include(cmake/code-signing.cmake)
+include(cmake/tests.cmake)
 
 target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
