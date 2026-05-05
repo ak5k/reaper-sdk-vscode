@@ -107,6 +107,9 @@ jobs:
           key: >-
             tooling-linux-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', '.clang-tidy', '.clang-format') }}
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0
+
       - name: Configure
         shell: bash
         run: |
@@ -114,7 +117,9 @@ jobs:
           cmake -B build/tooling -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_C_COMPILER=clang \
-            -DCMAKE_CXX_COMPILER=clang++
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
 
       - name: Build
         run: cmake --build build/tooling
@@ -197,6 +202,9 @@ jobs:
             echo "supported=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0
+
       - name: Configure
         if: ${{ !matrix.requires_rtsan_probe || steps.rtsan-probe.outputs.supported == 'true' }}
         shell: bash
@@ -206,6 +214,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
             -DCMAKE_C_FLAGS="${{ matrix.c_flags }}" \
             -DCMAKE_CXX_FLAGS="${{ matrix.cxx_flags }}" \
             -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.exe_linker_flags }}" \

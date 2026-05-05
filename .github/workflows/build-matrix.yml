@@ -225,6 +225,9 @@ jobs:
               ;;
           esac
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0
+
       - name: Configure
         shell: bash
         run: |
@@ -233,6 +236,8 @@ jobs:
             -B build
             -G Ninja
             -DCMAKE_BUILD_TYPE=${{ inputs.build_type }}
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
           )
 
           if [ -n "${TOOLCHAIN:-}" ]; then
@@ -340,13 +345,18 @@ jobs:
             sudo rm -rf /Library/Frameworks/Mono.framework
           fi
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0
+
       - name: Configure
         shell: bash
         run: |
           set -euo pipefail
           cmake --preset "$PRESET" \
             -DCMAKE_OSX_ARCHITECTURES="$ARCH" \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET="$DEPLOY_TARGET"
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="$DEPLOY_TARGET" \
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
 
       - name: Build
         shell: bash
@@ -511,9 +521,16 @@ jobs:
           'CFLAGS=-arm64EC' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           'CXXFLAGS=-arm64EC' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0
+
       - name: Configure
         shell: pwsh
-        run: cmake --preset $env:PRESET
+        run: |
+          cmake --preset $env:PRESET `
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache `
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache `
+            -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded
 
       - name: Build
         shell: pwsh
