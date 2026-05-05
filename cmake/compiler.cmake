@@ -7,8 +7,6 @@ if(NOT TARGET ${PROJECT_NAME}_lib OR NOT TARGET ${PROJECT_NAME})
     )
 endif()
 
-target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
-
 # --- Warning flags (edit these to taste) ---
 set(PROJECT_MSVC_WARNING_FLAGS
     /W3
