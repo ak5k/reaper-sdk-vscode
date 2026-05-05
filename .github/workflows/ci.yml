@@ -63,63 +63,6 @@ jobs:
 
           gersemi --check "${cmake_files[@]}"
 
-  tooling-linux:
-    name: Tooling Linux configure-build-test + clang-tidy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-
-      - name: Install latest CMake (Linuxbrew)
-        shell: bash
-        run: |
-          set -euo pipefail
-          brew update
-          # Only install CMake if not available or version < 4.0
-          need_cmake=true
-          if command -v cmake &> /dev/null; then
-            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
-            if [[ "${cmake_major}" -ge 4 ]]; then
-              need_cmake=false
-            fi
-          fi
-          if [[ "$need_cmake" == "true" ]]; then
-            brew install cmake
-          fi
-          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
-          cmake --version
-
-      - name: Install tooling dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build clang clang-tidy
-
-      - name: Cache CMake deps
-        uses: actions/cache@v4
-        with:
-          path: |
-            build/tooling/_deps
-          key: >-
-            tooling-linux-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', '.clang-tidy', '.clang-format') }}
-
-      - name: Configure
-        shell: bash
-        run: |
-          set -euo pipefail
-          cmake -B build/tooling -G Ninja \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_C_COMPILER=clang \
-            -DCMAKE_CXX_COMPILER=clang++
-
-      - name: Build
-        run: cmake --build build/tooling
-
-      - name: Test
-        run: ctest --test-dir build/tooling --output-on-failure
-
   sanitizer:
     name: Sanitizer ${{ matrix.name }}
     runs-on: ubuntu-latest
