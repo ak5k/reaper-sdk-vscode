@@ -25,6 +25,18 @@ set(PROJECT_GCC_CLANG_WARNING_FLAGS
     -Wno-conversion
     -Wno-sign-conversion
 )
+
+set(PROJECT_X86_SIMD_FLAGS)
+string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _processor_lower)
+if(NOT MSVC AND _processor_lower MATCHES "^(arm|armv[0-9]+|arm64|aarch64)$")
+    set(PROJECT_X86_SIMD_FLAGS)
+else()
+    if(MSVC)
+        set(PROJECT_X86_SIMD_FLAGS /arch:AVX2)
+    else()
+        set(PROJECT_X86_SIMD_FLAGS -mavx2 -mfma)
+    endif()
+endif()
 # -------------------------------------------
 
 if(MSVC)
@@ -44,7 +56,7 @@ if(MSVC)
         $<$<NOT:$<CONFIG:Debug>>:/Oi
         /Ot
         /fp:fast
-        /arch:AVX2>
+        ${PROJECT_X86_SIMD_FLAGS}>
     )
 else()
     set(_compile_flags
@@ -56,8 +68,7 @@ else()
         -fno-trapping-math
         -ffunction-sections
         -fdata-sections
-        -mavx2
-        -mfma>
+        ${PROJECT_X86_SIMD_FLAGS}>
     )
 endif()
 
