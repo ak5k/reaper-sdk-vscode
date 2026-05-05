@@ -108,8 +108,6 @@ jobs:
           set -euo pipefail
           brew update
 
-          brew install cmake
-
           brew install llvm
           echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
 
@@ -174,13 +172,12 @@ jobs:
       - name: Setup Homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Install latest CMake and LLVM (Linuxbrew)
+      - name: Install LLVM and Ninja (Linuxbrew)
         shell: bash
         run: |
           set -euo pipefail
           brew update
-          brew install cmake llvm ninja
-          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
+          brew install llvm ninja
           echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
           cmake --version
           clang --version

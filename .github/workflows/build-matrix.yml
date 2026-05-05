@@ -103,12 +103,11 @@ jobs:
       - name: Setup Homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Install Homebrew packages
+      - name: Refresh Homebrew metadata
         shell: bash
         run: |
           set -euo pipefail
           brew update
-          brew install cmake
           cmake --version
 
       - name: Cache CMake deps
@@ -301,12 +300,11 @@ jobs:
       - name: Setup Homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Install Homebrew packages
+      - name: Refresh Homebrew metadata
         shell: bash
         run: |
           set -euo pipefail
           brew update
-          brew install cmake
           cmake --version
 
       - name: Cache CMake deps
@@ -425,46 +423,28 @@ jobs:
         with:
           ref: ${{ inputs.checkout_ref }}
 
-      - name: Install CMake and NSIS
+      - name: Install NSIS
+        if: inputs.package_with_cpack
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
 
-          winget install --id Kitware.CMake --exact --source winget --accept-package-agreements --accept-source-agreements --silent --disable-interactivity --force
+          winget install --id NSIS.NSIS --exact --source winget --accept-package-agreements --accept-source-agreements --silent --disable-interactivity --force
 
-          $cmakePaths = @(
-            'C:\Program Files\CMake\bin'
+          $nsisPaths = @(
+            'C:\Program Files\NSIS\Bin',
+            'C:\Program Files (x86)\NSIS\Bin',
+            "$env:LOCALAPPDATA\Programs\NSIS\Bin"
           )
 
-          foreach ($pathEntry in $cmakePaths) {
+          foreach ($pathEntry in $nsisPaths) {
             $pathEntry | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
             if (-not (($env:Path -split ';') -contains $pathEntry)) {
               $env:Path = "$pathEntry;$env:Path"
             }
           }
 
-          if ('${{ inputs.package_with_cpack }}' -eq 'true') {
-            winget install --id NSIS.NSIS --exact --source winget --accept-package-agreements --accept-source-agreements --silent --disable-interactivity --force
-
-            $nsisPaths = @(
-              'C:\Program Files\NSIS\Bin',
-              'C:\Program Files (x86)\NSIS\Bin',
-              "$env:LOCALAPPDATA\Programs\NSIS\Bin"
-            )
-
-            foreach ($pathEntry in $nsisPaths) {
-              $pathEntry | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
-              if (-not (($env:Path -split ';') -contains $pathEntry)) {
-                $env:Path = "$pathEntry;$env:Path"
-              }
-            }
-          }
-
-          cmake --version
-
-          if ('${{ inputs.package_with_cpack }}' -eq 'true') {
-            makensis /VERSION
-          }
+          makensis /VERSION
 
       - name: Cache CMake deps
         uses: actions/cache@v4
