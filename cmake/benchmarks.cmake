@@ -1,3 +1,19 @@
+set(_benchmark_sources ${SOURCES})
+list(FILTER _benchmark_sources INCLUDE REGEX "_bench\\.cpp$")
+list(FILTER SOURCES EXCLUDE REGEX "_bench\\.cpp$")
+
+if(DEFINED ENV{CI} AND NOT ENABLE_BENCHMARK_TESTS)
+    message(
+        STATUS
+        "Skipping benchmarks in CI because ENABLE_BENCHMARK_TESTS is OFF"
+    )
+    return()
+endif()
+
+if(NOT _benchmark_sources)
+    return()
+endif()
+
 FetchContent_Declare(
     googlebenchmark
     GIT_REPOSITORY https://github.com/google/benchmark
@@ -36,35 +52,28 @@ if(WIN32)
     endif()
 endif()
 
-set(_benchmark_sources ${SOURCES})
-list(FILTER _benchmark_sources INCLUDE REGEX "_bench\\.cpp$")
-list(FILTER SOURCES EXCLUDE REGEX "_bench\\.cpp$")
-
-if(_benchmark_sources)
-    add_executable(${PROJECT_NAME}_benchmarks ${_benchmark_sources})
-    if(WIN32)
-        set_property(
-            TARGET ${PROJECT_NAME}_benchmarks
-            PROPERTY
-                MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
-        )
-    endif()
-    target_link_libraries(
-        ${PROJECT_NAME}_benchmarks
-        PRIVATE ${PROJECT_NAME}_lib benchmark::benchmark
+add_executable(${PROJECT_NAME}_benchmarks ${_benchmark_sources})
+if(WIN32)
+    set_property(
+        TARGET ${PROJECT_NAME}_benchmarks
+        PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
     )
+endif()
+target_link_libraries(
+    ${PROJECT_NAME}_benchmarks
+    PRIVATE ${PROJECT_NAME}_lib benchmark::benchmark
+)
 
-    set(_benchmark_output_dir "${CMAKE_BINARY_DIR}/benchmarks")
-    file(MAKE_DIRECTORY "${_benchmark_output_dir}")
-    string(TIMESTAMP _benchmark_timestamp "%Y%m%d-%H%M%S")
+set(_benchmark_output_dir "${CMAKE_BINARY_DIR}/benchmarks")
+file(MAKE_DIRECTORY "${_benchmark_output_dir}")
+string(TIMESTAMP _benchmark_timestamp "%Y%m%d-%H%M%S")
 
-    if(NOT DEFINED ENV{CI} OR ENABLE_BENCHMARK_TESTS)
-        add_test(
-            NAME run_benchmarks
-            COMMAND
-                $<TARGET_FILE:${PROJECT_NAME}_benchmarks>
-                --benchmark_out=${_benchmark_output_dir}/benchmark-${_benchmark_timestamp}.json
-        )
-        set_tests_properties(run_benchmarks PROPERTIES LABELS benchmark)
-    endif()
+if(NOT DEFINED ENV{CI} OR ENABLE_BENCHMARK_TESTS)
+    add_test(
+        NAME run_benchmarks
+        COMMAND
+            $<TARGET_FILE:${PROJECT_NAME}_benchmarks>
+            --benchmark_out=${_benchmark_output_dir}/benchmark-${_benchmark_timestamp}.json
+    )
+    set_tests_properties(run_benchmarks PROPERTIES LABELS benchmark)
 endif()
