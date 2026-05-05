@@ -30,18 +30,11 @@ jobs:
         run: |
           set -euo pipefail
           brew update
+          brew install clang-format gersemi
+          brew upgrade clang-format gersemi
 
-          ensure_latest_brew_formula() {
-            local formula="$1"
-            if brew list --versions "$formula" >/dev/null 2>&1; then
-              brew upgrade "$formula"
-            else
-              brew install "$formula"
-            fi
-          }
-
-          ensure_latest_brew_formula clang-format
-          ensure_latest_brew_formula gersemi
+          echo "$(brew --prefix clang-format)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix)/bin" >> "$GITHUB_PATH"
 
           clang-format --version
           gersemi --version
