@@ -27,9 +27,7 @@ set(PROJECT_GCC_CLANG_WARNING_FLAGS
 
 set(PROJECT_X86_SIMD_FLAGS)
 string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _processor_lower)
-if(NOT MSVC AND _processor_lower MATCHES "^(arm|armv[0-9]+|arm64|aarch64)$")
-    set(PROJECT_X86_SIMD_FLAGS)
-else()
+if(NOT _processor_lower MATCHES "^(arm.*|aarch64)$")
     if(MSVC)
         set(PROJECT_X86_SIMD_FLAGS /arch:AVX2)
     else()
