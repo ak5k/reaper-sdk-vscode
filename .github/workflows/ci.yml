@@ -221,7 +221,7 @@ jobs:
           echo "RTSAN is not supported by this LLVM toolchain; skipping job payload."
 
   benchmark-linux-clang-release:
-    name: Benchmark Linux Clang Release JSON
+    name: Benchmarks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
