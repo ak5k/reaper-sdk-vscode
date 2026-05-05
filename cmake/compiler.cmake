@@ -16,6 +16,7 @@ set(PROJECT_MSVC_WARNING_FLAGS
     /wd4244 # conversion, possible loss of data
     /wd4267 # size_t to int conversion
     /wd4305 # truncation from double to float
+    /wd4714 # function marked as __forceinline not inlined
     /wd4996 # deprecated functions
 )
 set(PROJECT_GCC_CLANG_WARNING_FLAGS
