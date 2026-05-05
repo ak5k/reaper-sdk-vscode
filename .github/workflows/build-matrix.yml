@@ -100,16 +100,6 @@ jobs:
         with:
           ref: ${{ inputs.checkout_ref }}
 
-      - name: Setup Homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-
-      - name: Refresh Homebrew metadata
-        shell: bash
-        run: |
-          set -euo pipefail
-          brew update
-          cmake --version
-
       - name: Cache CMake deps
         uses: actions/cache@v4
         with:
@@ -296,16 +286,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.checkout_ref }}
-
-      - name: Setup Homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-
-      - name: Refresh Homebrew metadata
-        shell: bash
-        run: |
-          set -euo pipefail
-          brew update
-          cmake --version
 
       - name: Cache CMake deps
         uses: actions/cache@v4
