@@ -228,9 +228,9 @@ jobs:
           set -euo pipefail
           ctest --test-dir build/benchmark-release --label-regex benchmark --output-on-failure
 
-      - name: Upload benchmark JSON artifact
+      - name: Upload benchmark and profiling artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-linux-clang-release-json
+          name: benchmark-linux-clang-release-results
           path: build/benchmark-release/benchmarks/**
           if-no-files-found: error
