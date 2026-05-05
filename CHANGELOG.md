@@ -1,3 +1,10 @@
+# [0.5.0](https://github.com/ak5k/reaper-sdk-vscode/compare/v0.4.1...v0.5.0) (2026-05-05)
+
+
+### Features
+
+* **reaper-sdk-vscode:** test ([ff74411](https://github.com/ak5k/reaper-sdk-vscode/commit/ff744111eb4c203ef6b5c785fc6ace6187515bbe))
+
 ## [0.4.1](https://github.com/ak5k/reaper-sdk-vscode/compare/v0.4.0...v0.4.1) (2026-05-05)
 
 
