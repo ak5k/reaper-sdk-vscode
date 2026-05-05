@@ -31,10 +31,7 @@ REAPER_PLUGIN_HINSTANCE hInstance{nullptr}; // used for dialogs, if any
 
 // Build-time switch: run business logic on every REAPER timer tick (true),
 // or execute once per action trigger (false).
-enum
-{
-    RUN_ON_TIMER = 1
-};
+static bool run_on_timer = true;
 
 // Called on every timer tick when the action is active, or once per trigger.
 void MainFunctionOfMyPlugin()
@@ -56,7 +53,7 @@ bool OnAction(KbdSectionInfo* sec, int command, int val, int val2, int relmode, 
     if (command != action_state.command_id)
         return false;
 
-    if (RUN_ON_TIMER)
+    if (run_on_timer)
     {
         action_state.is_active = !action_state.is_active;
         if (action_state.is_active)
@@ -103,8 +100,9 @@ char reascript_api_function_example_defstring[] =
 
 int ReaScriptAPIFunctionExample(int whole_number, bool boolean_value, double decimal_number,
                                 char* string_of_text, int string_of_text_sz,
-                                int* input_parameterInOptional, double* return_valueOutOptional,
-                                char* return_stringOutOptional, int return_string_sz)
+                                const int* input_parameterInOptional,
+                                double* return_valueOutOptional, char* return_stringOutOptional,
+                                int return_string_sz)
 {
     if (input_parameterInOptional != nullptr)
         *return_valueOutOptional = (*input_parameterInOptional + whole_number + decimal_number);
