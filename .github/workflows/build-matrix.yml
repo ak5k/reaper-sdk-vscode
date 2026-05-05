@@ -179,7 +179,7 @@ jobs:
 
           install_deps() {
             local target_arch="$1"; shift
-            local native=("$@" php-cli qemu-user-binfmt)
+            local native=("$@" php-cli qemu-user-binfmt clang-tidy)
             local target=(
               libboost-dev libcurl4-openssl-dev libsqlite3-dev libssl-dev
               libxml2-dev zlib1g-dev
