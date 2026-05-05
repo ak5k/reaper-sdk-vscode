@@ -234,3 +234,7 @@ jobs:
           name: benchmark-linux-clang-release-results
           path: build/benchmark-release/benchmarks/**
           if-no-files-found: error
+
+      - name: Clean benchmark output directory
+        shell: bash
+        run: rm -rf build/benchmark-release/benchmarks

@@ -103,5 +103,30 @@ if(NOT DEFINED ENV{CI} OR ENABLE_BENCHMARK_TESTS)
     endif()
 
     add_test(NAME run_benchmarks COMMAND ${_benchmark_command})
-    set_tests_properties(run_benchmarks PROPERTIES LABELS benchmark)
+    set_tests_properties(
+        run_benchmarks
+        PROPERTIES
+            LABELS benchmark
+            FIXTURES_SETUP benchmark_perf_data
+    )
+
+    if(ENABLE_BENCHMARK_TESTS AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_test(
+            NAME generate_perf_report
+            COMMAND
+                bash -c
+                "${_perf_program} report \
+                    --stdio \
+                    --no-children \
+                    --percent-limit=1 \
+                    --input=${_benchmark_output_dir}/perf-${_benchmark_timestamp}.data \
+                    > ${_benchmark_output_dir}/perf-report-${_benchmark_timestamp}.txt"
+        )
+        set_tests_properties(
+            generate_perf_report
+            PROPERTIES
+                LABELS benchmark
+                FIXTURES_REQUIRED benchmark_perf_data
+        )
+    endif()
 endif()
