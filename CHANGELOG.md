@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/ak5k/reaper-sdk-vscode/compare/v0.4.0...v0.4.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* **cmake:** ensure CPACK_COMPONENTS_ALL is defined for macOS packaging ([8fe86b5](https://github.com/ak5k/reaper-sdk-vscode/commit/8fe86b559c1f4d2b66f4166b18010af869c70533))
+
 # [0.4.0](https://github.com/ak5k/reaper-sdk-vscode/compare/v0.3.0...v0.4.0) (2026-05-05)
 
 
