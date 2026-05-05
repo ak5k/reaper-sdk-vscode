@@ -108,16 +108,7 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          need_cmake=true
-          if command -v cmake &> /dev/null; then
-            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
-            if [[ "${cmake_major}" -ge 4 ]]; then
-              need_cmake=false
-            fi
-          fi
-          if [[ "$need_cmake" == "true" ]]; then
-            brew install cmake
-          fi
+          brew install cmake
           cmake --version
 
       - name: Cache CMake deps
@@ -315,21 +306,7 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          need_cmake=true
-          if command -v cmake &> /dev/null; then
-            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
-            if [[ "${cmake_major}" -ge 4 ]]; then
-              need_cmake=false
-            fi
-          fi
-          if [[ "$need_cmake" == "true" ]]; then
-            brew install cmake
-          fi
-          if ! command -v clang-tidy &> /dev/null; then
-            brew install llvm
-            echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
-          fi
-          echo "CLANG_TIDY_PATH=$(command -v clang-tidy)" >> "$GITHUB_ENV"
+          brew install cmake
           cmake --version
 
       - name: Cache CMake deps
@@ -453,23 +430,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
 
-          # Only install CMake if not available or version < 4.0
-          $needCMake = $true
-          try {
-            $cmakeVersion = & cmake --version 2>$null | Select-Object -First 1
-            if ($cmakeVersion -match '(\d+)\.\d+') {
-              $majorVersion = [int]$matches[1]
-              if ($majorVersion -ge 4) {
-                $needCMake = $false
-              }
-            }
-          } catch {
-            # cmake not found or error, need to install
-          }
-
-          if ($needCMake) {
-            winget install --id Kitware.CMake --exact --source winget --accept-package-agreements --accept-source-agreements --silent --disable-interactivity --force
-          }
+          winget install --id Kitware.CMake --exact --source winget --accept-package-agreements --accept-source-agreements --silent --disable-interactivity --force
 
           $cmakePaths = @(
             'C:\Program Files\CMake\bin'

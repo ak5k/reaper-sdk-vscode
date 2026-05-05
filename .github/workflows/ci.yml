@@ -25,17 +25,24 @@ jobs:
       - name: Setup Homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Install clang-format and gersemi (Linuxbrew)
+      - name: Install latest clang-format and gersemi (Linuxbrew)
         shell: bash
         run: |
           set -euo pipefail
           brew update
-          if ! command -v clang-format &> /dev/null; then
-            brew install clang-format
-          fi
-          if ! command -v gersemi &> /dev/null; then
-            brew install gersemi
-          fi
+
+          ensure_latest_brew_formula() {
+            local formula="$1"
+            if brew list --versions "$formula" >/dev/null 2>&1; then
+              brew upgrade "$formula"
+            else
+              brew install "$formula"
+            fi
+          }
+
+          ensure_latest_brew_formula clang-format
+          ensure_latest_brew_formula gersemi
+
           clang-format --version
           gersemi --version
 
@@ -84,16 +91,7 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          need_cmake=true
-          if command -v cmake &> /dev/null; then
-            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
-            if [[ "${cmake_major}" -ge 4 ]]; then
-              need_cmake=false
-            fi
-          fi
-          if [[ "$need_cmake" == "true" ]]; then
-            brew install cmake
-          fi
+          brew install cmake
           cmake --version
 
       - name: Install tooling dependencies
@@ -176,20 +174,12 @@ jobs:
         run: |
           set -euo pipefail
           brew update
-          need_cmake=true
-          if command -v cmake &> /dev/null; then
-            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
-            if [[ "${cmake_major}" -ge 4 ]]; then
-              need_cmake=false
-            fi
-          fi
-          if [[ "$need_cmake" == "true" ]]; then
-            brew install cmake
-          fi
-          if ! command -v clang-tidy &> /dev/null; then
-            brew install llvm
-            echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
-          fi
+
+          brew install cmake
+
+          brew install llvm
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+
           cmake --version
           clang --version
 
