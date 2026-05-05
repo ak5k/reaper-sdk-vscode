@@ -7,8 +7,6 @@ if(NOT TARGET ${PROJECT_NAME}_lib OR NOT TARGET ${PROJECT_NAME})
     )
 endif()
 
-target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
-
 # --- Warning flags (edit these to taste) ---
 set(PROJECT_MSVC_WARNING_FLAGS
     /W3
@@ -16,6 +14,7 @@ set(PROJECT_MSVC_WARNING_FLAGS
     /wd4244 # conversion, possible loss of data
     /wd4267 # size_t to int conversion
     /wd4305 # truncation from double to float
+    /wd4714 # function marked as __forceinline not inlined
     /wd4996 # deprecated functions
 )
 set(PROJECT_GCC_CLANG_WARNING_FLAGS
@@ -27,13 +26,20 @@ set(PROJECT_GCC_CLANG_WARNING_FLAGS
 )
 
 set(PROJECT_X86_SIMD_FLAGS)
+string(TOLOWER "${CMAKE_CXX_COMPILER_TARGET}" _compiler_target_lower)
 string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _processor_lower)
+<<<<<<< benchmark
+if(
+    NOT _compiler_target_lower MATCHES "^(arm.*|aarch64)"
+    AND NOT _processor_lower MATCHES "^(arm.*|aarch64)$"
+=======
 string(TOLOWER "${CMAKE_CXX_COMPILER_TARGET}" _compiler_target_lower)
 if(
     NOT (
         _processor_lower MATCHES "^(arm.*|aarch64.*)$"
         OR _compiler_target_lower MATCHES "^(arm.*|aarch64.*)$"
     )
+>>>>>>> main
 )
     if(MSVC)
         set(PROJECT_X86_SIMD_FLAGS /arch:AVX2)

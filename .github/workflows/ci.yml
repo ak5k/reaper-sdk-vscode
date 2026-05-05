@@ -67,6 +67,8 @@ jobs:
 
           gersemi --check "${cmake_files[@]}"
 
+<<<<<<< benchmark
+=======
   tooling-linux:
     name: Tooling Linux configure-build-test + clang-tidy
     runs-on: ubuntu-latest
@@ -125,6 +127,7 @@ jobs:
       - name: Test
         run: ctest --test-dir build/tooling --output-on-failure
 
+>>>>>>> main
   sanitizer:
     name: Sanitizer ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -153,8 +156,6 @@ jobs:
             exe_linker_flags: -fsanitize=realtime
             shared_linker_flags: -fsanitize=realtime
             requires_rtsan_probe: true
-    env:
-      ARCH: x86_64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -223,3 +224,61 @@ jobs:
         if: ${{ matrix.requires_rtsan_probe && steps.rtsan-probe.outputs.supported != 'true' }}
         run: |
           echo "RTSAN is not supported by this LLVM toolchain; skipping job payload."
+
+  benchmark-linux-clang-release:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Install latest CMake and LLVM (Linuxbrew)
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew update
+          brew install cmake llvm ninja
+          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          cmake --version
+          clang --version
+
+      - name: Cache CMake deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/benchmark-release/_deps
+          key: >-
+            benchmark-linux-clang-release-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', 'src/*_bench.cpp') }}
+
+      - name: Configure (Release, Clang)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -B build/benchmark-release -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DENABLE_BENCHMARK_TESTS=ON
+
+      - name: Build benchmarks
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/benchmark-release
+
+      - name: Run benchmarks
+        shell: bash
+        run: |
+          set -euo pipefail
+          ctest --test-dir build/benchmark-release --label-regex benchmark --output-on-failure
+
+      - name: Upload benchmark JSON artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-linux-clang-release-json
+          path: build/benchmark-release/benchmarks/**
+          if-no-files-found: error

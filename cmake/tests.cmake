@@ -1,7 +1,7 @@
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest
-    GIT_TAG v1.17.0
+    GIT_TAG main
     SYSTEM
 )
 
@@ -23,14 +23,13 @@ if(WIN32)
     endforeach()
 endif()
 
-enable_testing()
+include(CTest)
 include(GoogleTest)
 
-file(
-    GLOB_RECURSE _test_sources
-    CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/src/*_test.cpp"
-)
+set(_test_sources ${SOURCES})
+list(FILTER _test_sources INCLUDE REGEX "_test\\.cpp$")
+list(FILTER SOURCES EXCLUDE REGEX "_test\\.cpp$")
+
 if(_test_sources)
     add_executable(${PROJECT_NAME}_tests ${_test_sources})
     if(WIN32)
@@ -44,5 +43,5 @@ if(_test_sources)
         ${PROJECT_NAME}_tests
         PRIVATE ${PROJECT_NAME}_lib GTest::gtest_main
     )
-    gtest_discover_tests(${PROJECT_NAME}_tests DISCOVERY_MODE PRE_TEST)
+    gtest_add_tests(TARGET ${PROJECT_NAME}_tests SOURCES ${_test_sources})
 endif()
