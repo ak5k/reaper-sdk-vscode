@@ -116,8 +116,9 @@ set(CPACK_STRIP_FILES OFF)
 # yielding a tiny installer with no payload.
 if(APPLE)
     set(CPACK_MONOLITHIC_INSTALL OFF)
-    # Keep the packaged component explicit so productbuild always emits pkg-ref.
-    set(CPACK_COMPONENTS_ALL "${PROJECT_NAME}")
+    if(NOT DEFINED CPACK_COMPONENTS_ALL OR CPACK_COMPONENTS_ALL STREQUAL "")
+        set(CPACK_COMPONENTS_ALL Unspecified)
+    endif()
 else()
     set(CPACK_MONOLITHIC_INSTALL ON)
 endif()

@@ -111,7 +111,6 @@ set_target_properties(
 set(REAPER_USER_PLUGINS "UserPlugins")
 install(
     TARGETS ${PROJECT_NAME}
-    COMPONENT ${PROJECT_NAME}
     RUNTIME
         DESTINATION
             "${REAPER_USER_PLUGINS}" # Windows .dll
@@ -124,7 +123,6 @@ if(WIN32)
     install(
         FILES $<TARGET_PDB_FILE:${PROJECT_NAME}>
         DESTINATION "${REAPER_USER_PLUGINS}"
-        COMPONENT ${PROJECT_NAME}
         OPTIONAL
     )
 endif()
