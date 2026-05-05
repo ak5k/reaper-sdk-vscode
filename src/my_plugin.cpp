@@ -151,7 +151,7 @@ void Register()
 {
     action_state.command_id = plugin_register("custom_action", &action);
 
-    if (RUN_ON_TIMER)
+    if (run_on_timer)
         plugin_register("toggleaction", (void*)ToggleActionCallback);
 
     plugin_register("hookcommand2", (void*)OnAction);
