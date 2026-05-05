@@ -72,6 +72,7 @@ sudo apt install build-essential cmake gdb git ninja-build
 - **Install step for REAPER**: build output is copied to REAPER `UserPlugins` after build
 - **Tests**: unit tests use GoogleTest with CTest
 - **Benchmarks**: Google Benchmark target with JSON output for CI artifact upload and performance tracking over time
+- **Profiling**: `perf` profiling on Linux/CI
 - **Packaging**: CPack config for `.exe` (Windows), `.pkg` (macOS), and `.deb` (Linux) installers
 - **CI workflows**: GitHub Actions build matrix, tests, and formatting checks (clang-format, gersemi)
 - **Release workflow**: `release.yml` creates version tags with semantic-release and uploads draft release artifacts

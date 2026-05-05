@@ -105,9 +105,7 @@ if(NOT DEFINED ENV{CI} OR ENABLE_BENCHMARK_TESTS)
     add_test(NAME run_benchmarks COMMAND ${_benchmark_command})
     set_tests_properties(
         run_benchmarks
-        PROPERTIES
-            LABELS benchmark
-            FIXTURES_SETUP benchmark_perf_data
+        PROPERTIES LABELS benchmark FIXTURES_SETUP benchmark_perf_data
     )
 
     if(ENABLE_BENCHMARK_TESTS AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -124,9 +122,7 @@ if(NOT DEFINED ENV{CI} OR ENABLE_BENCHMARK_TESTS)
         )
         set_tests_properties(
             generate_perf_report
-            PROPERTIES
-                LABELS benchmark
-                FIXTURES_REQUIRED benchmark_perf_data
+            PROPERTIES LABELS benchmark FIXTURES_REQUIRED benchmark_perf_data
         )
     endif()
 endif()
