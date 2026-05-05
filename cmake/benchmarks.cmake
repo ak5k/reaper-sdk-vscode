@@ -53,6 +53,7 @@ if(WIN32)
 endif()
 
 add_executable(${PROJECT_NAME}_benchmarks ${_benchmark_sources})
+configure_target_artifact_output(${PROJECT_NAME}_benchmarks)
 if(WIN32)
     set_property(
         TARGET ${PROJECT_NAME}_benchmarks

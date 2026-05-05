@@ -18,6 +18,11 @@ on:
         required: false
         default: true
         type: boolean
+      upload_artifacts:
+        description: Upload build artifacts for each matrix entry
+        required: false
+        default: true
+        type: boolean
       artifact_prefix:
         description: Optional artifact name prefix
         required: false
@@ -247,13 +252,13 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
       - name: Upload artifacts
-        if: always()
+        if: inputs.upload_artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact_prefix != '' && format('{0}-{1}', inputs.artifact_prefix, matrix.name) || matrix.name }}
           path: |
-            build/*.so
-            build/packages/*.deb
+            build/artifacts/**
+            build/packages/**
           if-no-files-found: warn
 
   build-macos:
@@ -360,13 +365,13 @@ jobs:
         run: ctest --test-dir "build/$PRESET" --output-on-failure
 
       - name: Upload artifacts
-        if: always()
+        if: inputs.upload_artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact_prefix != '' && format('{0}-{1}', inputs.artifact_prefix, matrix.name) || matrix.name }}
           path: |
-            build/${{ env.PRESET }}/*.dylib
-            build/${{ env.PRESET }}/packages/*.pkg
+            build/${{ env.PRESET }}/artifacts/**
+            build/${{ env.PRESET }}/packages/**
           if-no-files-found: warn
 
   build-windows:
@@ -471,7 +476,7 @@ jobs:
           endpoint: ${{ secrets.AZURE_ENDPOINT }}
           trusted-signing-account-name: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT_NAME }}
           certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE_NAME }}
-          files-folder: ${{ github.workspace }}\build\${{ env.PRESET }}
+          files-folder: ${{ github.workspace }}\build\${{ env.PRESET }}\artifacts\bin
           files-folder-filter: dll,exe
           files-folder-recurse: false
           file-digest: SHA256
@@ -506,12 +511,11 @@ jobs:
         run: ctest --test-dir build/$env:PRESET --output-on-failure
 
       - name: Upload artifacts
-        if: always()
+        if: inputs.upload_artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact_prefix != '' && format('{0}-{1}', inputs.artifact_prefix, matrix.name) || matrix.name }}
           path: |
-            build/${{ env.PRESET }}/*.dll
-            build/${{ env.PRESET }}/*.pdb
-            build/${{ env.PRESET }}/packages/*.exe
+            build/${{ env.PRESET }}/artifacts/**
+            build/${{ env.PRESET }}/packages/**
           if-no-files-found: warn

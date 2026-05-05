@@ -32,6 +32,7 @@ list(FILTER SOURCES EXCLUDE REGEX "_test\\.cpp$")
 
 if(_test_sources)
     add_executable(${PROJECT_NAME}_tests ${_test_sources})
+    configure_target_artifact_output(${PROJECT_NAME}_tests)
     if(WIN32)
         set_property(
             TARGET ${PROJECT_NAME}_tests

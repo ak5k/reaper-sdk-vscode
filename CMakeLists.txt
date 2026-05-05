@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 
-include(cmake/prepare.cmake)
+include(cmake/bootstrap.cmake)
 
 project(MyPlugin VERSION ${_version} LANGUAGES C CXX)
 
@@ -11,6 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(${PROJECT_NAME} SHARED)
 # add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/main.cpp")
+configure_target_artifact_output(${PROJECT_NAME})
 
 # core
 add_library(${PROJECT_NAME}_lib STATIC)

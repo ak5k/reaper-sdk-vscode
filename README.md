@@ -68,12 +68,13 @@ sudo apt install build-essential cmake gdb git ninja-build
 
 - **CMake presets**: configure/build presets for Windows, macOS, and Linux
 - **Dependency fetching**: WDL and reaper-sdk are fetched with `FetchContent` during configure
-- **Version and build metadata**: `prepare.cmake` reads version from git tags and records commit/branch in `config.h`
+- **Bootstrap setup**: `bootstrap.cmake` initializes shared project configuration used during configure
 - **Install step for REAPER**: build output is copied to REAPER `UserPlugins` after build
 - **Tests**: unit tests use GoogleTest with CTest
 - **Benchmarks**: Google Benchmark target with JSON output for CI artifact upload and performance tracking over time
 - **Profiling**: `perf` profiling on Linux/CI
 - **Packaging**: CPack config for `.exe` (Windows), `.pkg` (macOS), and `.deb` (Linux) installers
+- **Artifact staging**: build target binaries and debug symbols are emitted under `build/<preset>/artifacts/` for recursive CI upload
 - **CI workflows**: GitHub Actions build matrix, tests, and formatting checks (clang-format, gersemi)
 - **Release workflow**: `release.yml` creates version tags with semantic-release and uploads draft release artifacts
 - **Formatting**: `.clang-format` config and CI checks
