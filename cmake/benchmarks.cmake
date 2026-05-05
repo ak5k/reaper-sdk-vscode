@@ -59,6 +59,12 @@ if(WIN32)
         PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
     )
 endif()
+
+if(ENABLE_BENCHMARK_TESTS AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_compile_options(${PROJECT_NAME}_lib PRIVATE -g)
+    target_compile_options(${PROJECT_NAME}_benchmarks PRIVATE -g)
+endif()
+
 target_link_libraries(
     ${PROJECT_NAME}_benchmarks
     PRIVATE ${PROJECT_NAME}_lib benchmark::benchmark
@@ -69,11 +75,35 @@ file(MAKE_DIRECTORY "${_benchmark_output_dir}")
 string(TIMESTAMP _benchmark_timestamp "%Y%m%d-%H%M%S")
 
 if(NOT DEFINED ENV{CI} OR ENABLE_BENCHMARK_TESTS)
-    add_test(
-        NAME run_benchmarks
-        COMMAND
+    set(_benchmark_command
+        $<TARGET_FILE:${PROJECT_NAME}_benchmarks>
+        --benchmark_out=${_benchmark_output_dir}/benchmark-${_benchmark_timestamp}.json
+    )
+
+    if(ENABLE_BENCHMARK_TESTS AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        find_program(_perf_program perf)
+        if(NOT _perf_program)
+            message(
+                FATAL_ERROR
+                "ENABLE_BENCHMARK_TESTS is ON but 'perf' was not found on PATH. Install perf and reconfigure."
+            )
+        endif()
+
+        set(_benchmark_command
+            ${_perf_program}
+            record
+            --call-graph=dwarf
+            --no-buildid
+            --output=${_benchmark_output_dir}/perf-${_benchmark_timestamp}.data
+            --
             $<TARGET_FILE:${PROJECT_NAME}_benchmarks>
             --benchmark_out=${_benchmark_output_dir}/benchmark-${_benchmark_timestamp}.json
+        )
+    endif()
+
+    add_test(
+        NAME run_benchmarks
+        COMMAND ${_benchmark_command}
     )
     set_tests_properties(run_benchmarks PROPERTIES LABELS benchmark)
 endif()

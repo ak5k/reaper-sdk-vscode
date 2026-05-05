@@ -163,7 +163,7 @@ jobs:
           echo "RTSAN is not supported by this LLVM toolchain; skipping job payload."
 
   benchmark-linux-clang-release:
-    name: Benchmarks
+    name: Benchmarks & Profiling
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -181,6 +181,16 @@ jobs:
           echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
           cmake --version
           clang --version
+
+      - name: Ensure perf is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v perf >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y linux-tools-generic
+          fi
+          perf --version
 
       - name: Cache CMake deps
         uses: actions/cache@v4
