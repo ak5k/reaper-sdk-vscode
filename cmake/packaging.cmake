@@ -110,7 +110,17 @@ endforeach()
 
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 set(CPACK_STRIP_FILES OFF)
-set(CPACK_MONOLITHIC_INSTALL ON)
+
+# productbuild needs component metadata in distribution.dist.
+# Monolithic mode can produce an empty choices outline with no pkg-ref,
+# yielding a tiny installer with no payload.
+if(APPLE)
+    set(CPACK_MONOLITHIC_INSTALL OFF)
+    # Keep the packaged component explicit so productbuild always emits pkg-ref.
+    set(CPACK_COMPONENTS_ALL "${PROJECT_NAME}")
+else()
+    set(CPACK_MONOLITHIC_INSTALL ON)
+endif()
 
 # Generator selection.
 if(WIN32)
