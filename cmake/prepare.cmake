@@ -11,8 +11,7 @@ foreach(_source_dir IN LISTS _fetchcontent_source_dirs)
     cmake_path(GET _source_dir FILENAME _content_name)
     string(REGEX REPLACE "-src$" "" _content_name "${_content_name}")
     string(TOUPPER "${_content_name}" _content_name_upper)
-    set(
-        "FETCHCONTENT_SOURCE_DIR_${_content_name_upper}"
+    set("FETCHCONTENT_SOURCE_DIR_${_content_name_upper}"
         "${_source_dir}"
         CACHE PATH
         "Override ${_content_name} FetchContent source dir"
