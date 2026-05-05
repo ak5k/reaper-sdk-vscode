@@ -1,0 +1,225 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-matrix.yml
+    with:
+      build_type: Debug
+      run_tests: true
+
+  clang-format-report:
+    name: clang-format report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Install clang-format and gersemi (Linuxbrew)
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew update
+          brew install clang-format gersemi
+          echo "$(brew --prefix clang-format)/bin" >> "$GITHUB_PATH"
+          clang-format --version
+          gersemi --version
+
+      - name: Check formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(git ls-files \
+            '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hpp' '*.hxx' '*.inl')
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No format-managed files found."
+            exit 0
+          fi
+
+          clang-format --dry-run --Werror "${files[@]}"
+
+      - name: Check CMake formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t cmake_files < <(git ls-files \
+            'CMakeLists.txt' '*.cmake')
+
+          if [ "${#cmake_files[@]}" -eq 0 ]; then
+            echo "No CMake files found."
+            exit 0
+          fi
+
+          gersemi --check "${cmake_files[@]}"
+
+  tooling-linux:
+    name: Tooling Linux configure-build-test + clang-tidy
+    runs-on: ubuntu-latest
+    env:
+      ARCH: x86_64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Install latest CMake (Linuxbrew)
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew update
+          # Only install CMake if not available or version < 4.0
+          need_cmake=true
+          if command -v cmake &> /dev/null; then
+            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
+            if [[ "${cmake_major}" -ge 4 ]]; then
+              need_cmake=false
+            fi
+          fi
+          if [[ "$need_cmake" == "true" ]]; then
+            brew install cmake
+          fi
+          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
+          cmake --version
+
+      - name: Install tooling dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build clang clang-tidy
+
+      - name: Cache CMake deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/tooling/_deps
+          key: >-
+            tooling-linux-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake', '.clang-tidy', '.clang-format') }}
+
+      - name: Configure
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -B build/tooling -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++
+
+      - name: Build
+        run: cmake --build build/tooling
+
+      - name: Test
+        run: ctest --test-dir build/tooling --output-on-failure
+
+  sanitizer:
+    name: Sanitizer ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ASAN+UBSAN+LSAN
+            build_dir: build/asan
+            c_flags: -fsanitize=address,undefined,leak -fno-omit-frame-pointer
+            cxx_flags: -fsanitize=address,undefined,leak -fno-omit-frame-pointer
+            exe_linker_flags: -fsanitize=address,undefined,leak
+            shared_linker_flags: -fsanitize=address,undefined,leak
+            requires_rtsan_probe: false
+          - name: TSAN
+            build_dir: build/tsan
+            c_flags: -fsanitize=thread -fno-omit-frame-pointer
+            cxx_flags: -fsanitize=thread -fno-omit-frame-pointer
+            exe_linker_flags: -fsanitize=thread
+            shared_linker_flags: -fsanitize=thread
+            requires_rtsan_probe: false
+          - name: RTSAN
+            build_dir: build/rtsan
+            c_flags: -fsanitize=realtime -fno-omit-frame-pointer
+            cxx_flags: -fsanitize=realtime -fno-omit-frame-pointer
+            exe_linker_flags: -fsanitize=realtime
+            shared_linker_flags: -fsanitize=realtime
+            requires_rtsan_probe: true
+    env:
+      ARCH: x86_64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Install Homebrew packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew update
+          # Only install CMake if not available or version < 4.0
+          need_cmake=true
+          if command -v cmake &> /dev/null; then
+            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
+            if [[ "${cmake_major}" -ge 4 ]]; then
+              need_cmake=false
+            fi
+          fi
+          if [[ "$need_cmake" == "true" ]]; then
+            brew install cmake
+          fi
+          brew install llvm
+          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          cmake --version
+          clang --version
+
+      - name: Probe realtime sanitizer support
+        if: matrix.requires_rtsan_probe
+        id: rtsan-probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/rtsan_probe.cpp << 'EOF'
+          int main() { return 0; }
+          EOF
+
+          if clang++ -fsanitize=realtime /tmp/rtsan_probe.cpp -o /tmp/rtsan_probe >/dev/null 2>&1; then
+            echo "supported=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "supported=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure
+        if: ${{ !matrix.requires_rtsan_probe || steps.rtsan-probe.outputs.supported == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -B ${{ matrix.build_dir }} -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_FLAGS="${{ matrix.c_flags }}" \
+            -DCMAKE_CXX_FLAGS="${{ matrix.cxx_flags }}" \
+            -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.exe_linker_flags }}" \
+            -DCMAKE_SHARED_LINKER_FLAGS="${{ matrix.shared_linker_flags }}"
+
+      - name: Build
+        if: ${{ !matrix.requires_rtsan_probe || steps.rtsan-probe.outputs.supported == 'true' }}
+        run: cmake --build ${{ matrix.build_dir }}
+
+      - name: Test
+        if: ${{ !matrix.requires_rtsan_probe || steps.rtsan-probe.outputs.supported == 'true' }}
+        run: ctest --test-dir ${{ matrix.build_dir }} --output-on-failure
+
+      - name: RTSAN unavailable note
+        if: ${{ matrix.requires_rtsan_probe && steps.rtsan-probe.outputs.supported != 'true' }}
+        run: |
+          echo "RTSAN is not supported by this LLVM toolchain; skipping job payload."

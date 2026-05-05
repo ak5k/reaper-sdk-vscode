@@ -1,0 +1,575 @@
+name: Build Matrix Reusable
+
+on:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        description: Optional git ref to checkout
+        required: false
+        default: ''
+        type: string
+      build_type:
+        description: CMake build type (Debug or Release)
+        required: false
+        default: Debug
+        type: string
+      run_tests:
+        description: Run ctest for matrix entries that do not opt out
+        required: false
+        default: true
+        type: boolean
+      artifact_prefix:
+        description: Optional artifact name prefix
+        required: false
+        default: ''
+        type: string
+      cache_key_prefix:
+        description: Optional cache key prefix
+        required: false
+        default: ''
+        type: string
+      package_with_cpack:
+        description: Build platform packages with CPack
+        required: false
+        default: false
+        type: boolean
+      sign_windows_artifacts:
+        description: Sign Windows binaries and installer with Azure Artifact Signing when package_with_cpack is enabled
+        required: false
+        default: false
+        type: boolean
+      notarize_macos:
+        description: Notarize macOS package when package_with_cpack is enabled and credentials are available
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      MACOS_NOTARIZATION_USERNAME:
+        required: false
+      MACOS_NOTARIZATION_TEAM_ID:
+        required: false
+      MACOS_NOTARIZATION_PASSWORD:
+        required: false
+      AZURE_TENANT_ID:
+        required: false
+      AZURE_CLIENT_ID:
+        required: false
+      AZURE_CLIENT_SECRET:
+        required: false
+      AZURE_ENDPOINT:
+        required: false
+      AZURE_TRUSTED_SIGNING_ACCOUNT_NAME:
+        required: false
+      AZURE_CERTIFICATE_PROFILE_NAME:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-linux:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            arch: x86_64
+            skip_tests: false
+          - name: linux-i686
+            arch: i686
+            skip_tests: true
+          - name: linux-armv7l
+            arch: armv7l
+            skip_tests: true
+          - name: linux-aarch64
+            arch: aarch64
+            skip_tests: true
+    env:
+      ARCH: ${{ matrix.arch }}
+
+    steps:
+      - name: Checkout (default ref)
+        if: inputs.checkout_ref == ''
+        uses: actions/checkout@v4
+
+      - name: Checkout (requested ref)
+        if: inputs.checkout_ref != ''
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref }}
+
+      - name: Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Install Homebrew packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew update
+          # Only install CMake if not available or version < 4.0
+          need_cmake=true
+          if command -v cmake &> /dev/null; then
+            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
+            if [[ "${cmake_major}" -ge 4 ]]; then
+              need_cmake=false
+            fi
+          fi
+          if [[ "$need_cmake" == "true" ]]; then
+            brew install cmake
+          fi
+          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
+          cmake --version
+
+      - name: Cache CMake deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/_deps
+          key: >-
+            ${{ inputs.cache_key_prefix }}Linux-${{ matrix.arch }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake') }}
+
+      - name: Setup cross-compilation dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          configure_apt_sources() {
+            local target_arch="$1"
+            . /etc/os-release
+
+            if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+              # Keep native packages on archive.ubuntu.com and use ports only for ARM targets.
+              # Avoid security/backports suites for cross-arch parity on ubuntu-latest.
+              printf '%s\n' \
+                'Types: deb' \
+                'Architectures: amd64 i386' \
+                'URIs: http://archive.ubuntu.com/ubuntu/' \
+                "Suites: ${VERSION_CODENAME} ${VERSION_CODENAME}-updates" \
+                'Components: main universe restricted multiverse' \
+                'Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg' \
+                | sudo tee /etc/apt/sources.list.d/ubuntu.sources > /dev/null
+
+              sudo rm -f /etc/apt/sources.list.d/ubuntu-ports.sources
+              if [[ "$target_arch" =~ ^(arm64|armhf)$ ]]; then
+                printf '%s\n' \
+                  'Types: deb' \
+                  "Architectures: ${target_arch}" \
+                  'URIs: http://ports.ubuntu.com/ubuntu-ports/' \
+                  "Suites: ${VERSION_CODENAME} ${VERSION_CODENAME}-updates" \
+                  'Components: main universe restricted multiverse' \
+                  'Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg' \
+                  | sudo tee /etc/apt/sources.list.d/ubuntu-ports.sources > /dev/null
+              fi
+            elif [ -f /etc/apt/sources.list ]; then
+              printf '%s\n' \
+                "deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu/ ${VERSION_CODENAME} main universe restricted multiverse" \
+                "deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu/ ${VERSION_CODENAME}-updates main universe restricted multiverse" \
+                | sudo tee /etc/apt/sources.list > /dev/null
+
+              sudo rm -f /etc/apt/sources.list.d/ports.list
+              if [[ "$target_arch" =~ ^(arm64|armhf)$ ]]; then
+                printf '%s\n' \
+                  "deb [arch=${target_arch}] http://ports.ubuntu.com/ubuntu-ports/ ${VERSION_CODENAME} main universe restricted multiverse" \
+                  "deb [arch=${target_arch}] http://ports.ubuntu.com/ubuntu-ports/ ${VERSION_CODENAME}-updates main universe restricted multiverse" \
+                  | sudo tee /etc/apt/sources.list.d/ports.list > /dev/null
+              fi
+            fi
+          }
+
+          install_deps() {
+            local target_arch="$1"; shift
+            local native=("$@" php-cli qemu-user-binfmt)
+            local target=(
+              libboost-dev libcurl4-openssl-dev libsqlite3-dev libssl-dev
+              libxml2-dev zlib1g-dev
+            )
+
+            sudo dpkg --add-architecture "$target_arch"
+            configure_apt_sources "$target_arch"
+            sudo rm -rf /var/lib/apt/lists/*
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq aptitude > /dev/null
+            sudo aptitude install -yR "${native[@]}" "${target[@]/%/:$target_arch}" > /dev/null
+            sudo aptitude install -yR "${native[@]}" > /dev/null
+          }
+
+          case "$ARCH" in
+            x86_64)
+              install_deps amd64
+              ;;
+            i686)
+              install_deps i386 g++-multilib
+              {
+                echo "TOOLCHAIN=${GITHUB_WORKSPACE}/cmake/linux-cross.cmake"
+                echo "TOOLCHAIN_PREFIX=i386-linux-gnu"
+              } >> "$GITHUB_ENV"
+              ;;
+            armv7l)
+              install_deps armhf g++-arm-linux-gnueabihf
+              {
+                echo "TOOLCHAIN=${GITHUB_WORKSPACE}/cmake/linux-cross.cmake"
+                echo "TOOLCHAIN_PREFIX=arm-linux-gnueabihf"
+              } >> "$GITHUB_ENV"
+              ;;
+            aarch64)
+              install_deps arm64 g++-aarch64-linux-gnu
+              {
+                echo "TOOLCHAIN=${GITHUB_WORKSPACE}/cmake/linux-cross.cmake"
+                echo "TOOLCHAIN_PREFIX=aarch64-linux-gnu"
+              } >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "Unsupported ARCH: $ARCH" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Configure
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake_args=(
+            -B build
+            -G Ninja
+            -DCMAKE_BUILD_TYPE=${{ inputs.build_type }}
+          )
+
+          if [ -n "${TOOLCHAIN:-}" ]; then
+            cmake_args+=("-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN}")
+          else
+            cmake_args+=(
+              "-DCMAKE_C_COMPILER=gcc"
+              "-DCMAKE_CXX_COMPILER=g++"
+            )
+          fi
+
+          cmake "${cmake_args[@]}"
+
+      - name: Build
+        shell: bash
+        run: cmake --build build
+
+      - name: Build package
+        if: inputs.package_with_cpack
+        shell: bash
+        run: cpack --config build/CPackConfig.cmake
+
+      - name: Test
+        if: inputs.run_tests && !matrix.skip_tests
+        shell: bash
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_prefix != '' && format('{0}-{1}', inputs.artifact_prefix, matrix.name) || matrix.name }}
+          path: |
+            build/*.so
+            build/packages/*.deb
+          if-no-files-found: warn
+
+  build-macos:
+    name: ${{ matrix.name }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-x86_64
+            arch: x86_64
+            skip_tests: true
+          - name: macos-arm64
+            arch: arm64
+            skip_tests: false
+    env:
+      ARCH: ${{ matrix.arch }}
+      PRESET: macos-appleclang-ninja-${{ inputs.build_type == 'Release' && 'release' || 'debug' }}
+      MACOS_NOTARIZATION_USERNAME: ${{ secrets.MACOS_NOTARIZATION_USERNAME }}
+      MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.MACOS_NOTARIZATION_TEAM_ID }}
+      MACOS_NOTARIZATION_PASSWORD: ${{ secrets.MACOS_NOTARIZATION_PASSWORD }}
+
+    steps:
+      - name: Checkout (default ref)
+        if: inputs.checkout_ref == ''
+        uses: actions/checkout@v4
+
+      - name: Checkout (requested ref)
+        if: inputs.checkout_ref != ''
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref }}
+
+      - name: Setup Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Install Homebrew packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew update
+          # Only install CMake if not available or version < 4.0
+          need_cmake=true
+          if command -v cmake &> /dev/null; then
+            cmake_major=$(cmake --version | grep -oE '[0-9]+' | head -1)
+            if [[ "${cmake_major}" -ge 4 ]]; then
+              need_cmake=false
+            fi
+          fi
+          if [[ "$need_cmake" == "true" ]]; then
+            brew install cmake
+          fi
+          echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
+          cmake --version
+
+      - name: Cache CMake deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/${{ env.PRESET }}/_deps
+          key: >-
+            ${{ inputs.cache_key_prefix }}macOS-${{ matrix.arch }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake') }}
+
+      - name: Setup build environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "DEPLOY_TARGET=11.0" >> "$GITHUB_ENV"
+          if [ -d /Library/Frameworks/Mono.framework ]; then
+            sudo rm -rf /Library/Frameworks/Mono.framework
+          fi
+
+      - name: Configure
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --preset "$PRESET" \
+            -DCMAKE_OSX_ARCHITECTURES="$ARCH" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="$DEPLOY_TARGET"
+
+      - name: Build
+        shell: bash
+        run: cmake --build --preset "$PRESET"
+
+      - name: Setup notarytool keychain profile
+        if: inputs.package_with_cpack && inputs.notarize_macos && env.MACOS_NOTARIZATION_USERNAME != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcrun notarytool store-credentials "notarytool-profile" \
+            --apple-id "$MACOS_NOTARIZATION_USERNAME" \
+            --team-id "$MACOS_NOTARIZATION_TEAM_ID" \
+            --password "$MACOS_NOTARIZATION_PASSWORD"
+
+      - name: Configure notarization profile
+        if: inputs.package_with_cpack && inputs.notarize_macos && env.MACOS_NOTARIZATION_USERNAME != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --preset "$PRESET" -DNOTARIZE_KEYCHAIN_PROFILE=notarytool-profile
+
+      - name: Build package
+        if: inputs.package_with_cpack
+        shell: bash
+        run: cpack --config "build/$PRESET/CPackConfig.cmake"
+
+      - name: Notarize package
+        if: inputs.package_with_cpack && inputs.notarize_macos && env.MACOS_NOTARIZATION_USERNAME != ''
+        shell: bash
+        run: cmake --build --preset "$PRESET" --target notarize
+
+      - name: Notarization skipped notice
+        if: inputs.package_with_cpack && inputs.notarize_macos && env.MACOS_NOTARIZATION_USERNAME == ''
+        shell: bash
+        run: |
+          echo "Notarization requested, but MACOS_NOTARIZATION_USERNAME is empty. Package was built without notarization."
+
+      - name: Test
+        if: inputs.run_tests && !matrix.skip_tests
+        shell: bash
+        run: ctest --test-dir "build/$PRESET" --output-on-failure
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_prefix != '' && format('{0}-{1}', inputs.artifact_prefix, matrix.name) || matrix.name }}
+          path: |
+            build/${{ env.PRESET }}/*.dylib
+            build/${{ env.PRESET }}/packages/*.pkg
+          if-no-files-found: warn
+
+  build-windows:
+    name: ${{ matrix.name }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-x64
+            arch: x64
+            msvc_arch: x64
+            skip_tests: false
+          - name: windows-x86
+            arch: x86
+            msvc_arch: x86
+            skip_tests: true
+          - name: windows-arm64ec
+            arch: arm64ec
+            msvc_arch: amd64_arm64
+            skip_tests: true
+    env:
+      PRESET: windows-msvc-ninja-${{ inputs.build_type == 'Release' && 'release' || 'debug' }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    steps:
+      - name: Checkout (default ref)
+        if: inputs.checkout_ref == ''
+        uses: actions/checkout@v4
+
+      - name: Checkout (requested ref)
+        if: inputs.checkout_ref != ''
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref }}
+
+      - name: Install CMake and NSIS
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          # Only install CMake if not available or version < 4.0
+          $needCMake = $true
+          try {
+            $cmakeVersion = & cmake --version 2>$null | Select-Object -First 1
+            if ($cmakeVersion -match '(\d+)\.\d+') {
+              $majorVersion = [int]$matches[1]
+              if ($majorVersion -ge 4) {
+                $needCMake = $false
+              }
+            }
+          } catch {
+            # cmake not found or error, need to install
+          }
+
+          if ($needCMake) {
+            winget install --id Kitware.CMake --exact --source winget --accept-package-agreements --accept-source-agreements --silent --disable-interactivity --force
+          }
+
+          $cmakePaths = @(
+            'C:\Program Files\CMake\bin'
+          )
+
+          foreach ($pathEntry in $cmakePaths) {
+            $pathEntry | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+            if (-not (($env:Path -split ';') -contains $pathEntry)) {
+              $env:Path = "$pathEntry;$env:Path"
+            }
+          }
+
+          if ('${{ inputs.package_with_cpack }}' -eq 'true') {
+            winget install --id NSIS.NSIS --exact --source winget --accept-package-agreements --accept-source-agreements --silent --disable-interactivity --force
+
+            $nsisPaths = @(
+              'C:\Program Files\NSIS\Bin',
+              'C:\Program Files (x86)\NSIS\Bin',
+              "$env:LOCALAPPDATA\Programs\NSIS\Bin"
+            )
+
+            foreach ($pathEntry in $nsisPaths) {
+              $pathEntry | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+              if (-not (($env:Path -split ';') -contains $pathEntry)) {
+                $env:Path = "$pathEntry;$env:Path"
+              }
+            }
+          }
+
+          cmake --version
+
+          if ('${{ inputs.package_with_cpack }}' -eq 'true') {
+            makensis /VERSION
+          }
+
+      - name: Cache CMake deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/${{ env.PRESET }}/_deps
+          key: >-
+            ${{ inputs.cache_key_prefix }}Windows-${{ matrix.arch }}-${{ hashFiles('CMakeLists.txt', 'cmake/**/*.cmake') }}
+
+      - name: Setup MSVC developer command prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
+
+      - name: Setup ARM64EC flags
+        if: matrix.arch == 'arm64ec'
+        shell: pwsh
+        run: |
+          'CFLAGS=-arm64EC' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          'CXXFLAGS=-arm64EC' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Configure
+        shell: pwsh
+        run: cmake --preset $env:PRESET
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build --preset $env:PRESET
+
+      - name: Sign binaries
+        if: inputs.package_with_cpack && inputs.sign_windows_artifacts && env.AZURE_TENANT_ID != ''
+        uses: azure/artifact-signing-action@v1
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.AZURE_ENDPOINT }}
+          trusted-signing-account-name: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE_NAME }}
+          files-folder: ${{ github.workspace }}\build\${{ env.PRESET }}
+          files-folder-filter: dll,exe
+          files-folder-recurse: false
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Build package
+        if: inputs.package_with_cpack
+        shell: pwsh
+        run: cpack --config "build/$env:PRESET/CPackConfig.cmake"
+
+      - name: Sign installer
+        if: inputs.package_with_cpack && inputs.sign_windows_artifacts && env.AZURE_TENANT_ID != ''
+        uses: azure/artifact-signing-action@v1
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.AZURE_ENDPOINT }}
+          trusted-signing-account-name: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE_NAME }}
+          files-folder: ${{ github.workspace }}\build\${{ env.PRESET }}\packages
+          files-folder-filter: exe
+          files-folder-recurse: false
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Test
+        if: inputs.run_tests && !matrix.skip_tests
+        shell: pwsh
+        run: ctest --test-dir build/$env:PRESET --output-on-failure
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_prefix != '' && format('{0}-{1}', inputs.artifact_prefix, matrix.name) || matrix.name }}
+          path: |
+            build/${{ env.PRESET }}/*.dll
+            build/${{ env.PRESET }}/*.pdb
+            build/${{ env.PRESET }}/packages/*.exe
+          if-no-files-found: warn
