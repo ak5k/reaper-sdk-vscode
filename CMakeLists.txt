@@ -4,10 +4,6 @@ include(cmake/prepare.cmake)
 
 project(MyPlugin VERSION ${_version} LANGUAGES C CXX)
 
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 add_library(${PROJECT_NAME} SHARED)
 # add_executable(${PROJECT_NAME})
 
@@ -18,6 +14,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(cmake/reaper-plugin.cmake)
 include(cmake/tests.cmake)
 include(cmake/clang-tidy.cmake)
+include(cmake/compiler.cmake)
+include(cmake/code-signing.cmake)
+include(cmake/packaging.cmake)
 
 target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
@@ -40,21 +39,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/src/config.h.in")
         "${CMAKE_BINARY_DIR}/config.h"
     )
 endif()
-
-if(MSVC)
-    target_compile_options(
-        ${PROJECT_NAME}_lib
-        PUBLIC /W3 /WX /wd4996 /wd4244 /wd4267 /wd4305
-    )
-else()
-    target_compile_options(
-        ${PROJECT_NAME}_lib
-        PUBLIC -Wall -Wextra -Werror -Wno-conversion -Wno-sign-conversion
-    )
-endif()
-
-include(cmake/code-signing.cmake)
-include(cmake/packaging.cmake)
 
 add_custom_command(
     TARGET ${PROJECT_NAME}
