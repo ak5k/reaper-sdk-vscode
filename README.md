@@ -4,7 +4,7 @@ A template for REAPER Plug-in Extension development using Visual Studio Code and
 
 ## Features
 
-- **CMake presets**: configure/build presets for Windows (MSVC, Ninja), macOS (Clang), and Linux (Clang/GCC)
+- **CMake presets**: configure/build presets for Windows, macOS, and Linux
 - **Dependency fetching**: WDL and reaper-sdk are fetched with `FetchContent` during configure
 - **Version and build metadata**: `prepare.cmake` reads version from git tags and records commit/branch in `config.h`
 - **Install step for REAPER**: build output is copied to REAPER `UserPlugins` after build
