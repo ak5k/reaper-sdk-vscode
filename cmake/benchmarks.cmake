@@ -102,9 +102,6 @@ if(NOT DEFINED ENV{CI} OR ENABLE_BENCHMARK_TESTS)
         )
     endif()
 
-    add_test(
-        NAME run_benchmarks
-        COMMAND ${_benchmark_command}
-    )
+    add_test(NAME run_benchmarks COMMAND ${_benchmark_command})
     set_tests_properties(run_benchmarks PROPERTIES LABELS benchmark)
 endif()
