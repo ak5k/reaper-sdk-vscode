@@ -76,7 +76,7 @@ sudo apt install build-essential cmake gdb git ninja-build
 - **Release workflow**: `release.yml` creates version tags with semantic-release and uploads draft release artifacts
 - **Formatting**: `.clang-format` config and CI checks
 - **Static analysis**: `.clang-tidy` config with CMake integration
-- **Git hook**: `.githooks/pre-commit` runs formatting checks
+- **Git hook**: `.githooks/pre-commit` runs `clang-format` and `gersemi` formatting checks before commits
 - **Dependency updates**: Dependabot updates GitHub Actions dependencies
 - **Signing/notarization**: macOS and Windows code signing and notarization with CPack packaging and GitHub Actions
 - **Reusable project template**: REAPER-specific logic is isolated and can be removed for non-REAPER targets; in toplevel `CMakeLists.txt` change project name, replace source files in `src/` with our own, remove `include(cmake/reaper-plugin.cmake)`, swap to `add_executable(${PROJECT_NAME})`, and start working on your own project!
