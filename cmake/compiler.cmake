@@ -56,6 +56,8 @@ if(MSVC)
         ${PROJECT_MSVC_WARNING_FLAGS}
         $<$<NOT:$<CONFIG:Debug>>:/Oi
         /GF
+        /Gy
+        /Gw
         /fp:fast
         ${PROJECT_X86_SIMD_FLAGS}>
     )
@@ -66,6 +68,8 @@ else()
         -ffast-math
         -ffunction-sections
         -fdata-sections
+        -fvisibility-ms-compat
+        -fvisibility-inlines-hidden
         ${PROJECT_X86_SIMD_FLAGS}>
     )
 endif()
@@ -89,5 +93,5 @@ foreach(_target ${PROJECT_NAME} ${PROJECT_NAME}_lib)
 endforeach()
 
 target_link_options(${PROJECT_NAME} PRIVATE ${_link_flags})
-target_compile_options(${PROJECT_NAME}_lib PRIVATE ${_compile_flags})
 target_compile_options(${PROJECT_NAME} PRIVATE ${_compile_flags})
+target_compile_options(${PROJECT_NAME}_lib PRIVATE ${_compile_flags})
