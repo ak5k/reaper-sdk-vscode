@@ -1,9 +1,7 @@
 #define REAPERAPI_IMPLEMENT
-#include <reaper_plugin_functions.h>
-
-#include <gtest/gtest.h>
-
 #include <config.h>
+#include <gtest/gtest.h>
+#include <reaper_plugin_functions.h>
 
 namespace PROJECT_NAME
 {
