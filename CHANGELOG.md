@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/ak5k/reaper-sdk-vscode/compare/v0.4.0...v0.4.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* **MyPlugin:** test ([5c9a629](https://github.com/ak5k/reaper-sdk-vscode/commit/5c9a6297d741973cd91803327772e6ecf2734195))
+
 # [0.4.0](https://github.com/ak5k/reaper-sdk-vscode/compare/v0.3.0...v0.4.0) (2026-05-05)
 
 
