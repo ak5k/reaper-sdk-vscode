@@ -325,7 +325,10 @@ jobs:
           if [[ "$need_cmake" == "true" ]]; then
             brew install cmake
           fi
+          brew install llvm
           echo "$(brew --prefix cmake)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          echo "CLANG_TIDY_PATH=$(brew --prefix llvm)/bin/clang-tidy" >> "$GITHUB_ENV"
           cmake --version
 
       - name: Cache CMake deps
