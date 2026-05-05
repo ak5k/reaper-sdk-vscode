@@ -82,6 +82,26 @@ jobs:
         with:
           node-version: "lts/*"
 
+      - name: Clear changelog entries above previous stable release
+        if: steps.existing.outputs.is_update != 'true'
+        run: |
+          prev_tag=$(git tag --list 'v*' | grep -Ev -- '-' | sort -V | tail -1)
+          if [[ -z "$prev_tag" ]]; then
+            > CHANGELOG.md
+          else
+            canonical_first_line=$(git show "${prev_tag}:CHANGELOG.md" 2>/dev/null | head -1)
+            if [[ -z "$canonical_first_line" ]]; then
+              > CHANGELOG.md
+            else
+              line=$(grep -Fn "$canonical_first_line" CHANGELOG.md | tail -1 | cut -d: -f1)
+              if [[ -n "$line" ]]; then
+                tail -n "+${line}" CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+              else
+                > CHANGELOG.md
+              fi
+            fi
+          fi
+
       - name: Release
         if: steps.existing.outputs.is_update != 'true'
         env:
